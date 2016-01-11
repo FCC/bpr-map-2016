@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<!--
+    __________________   __  ___                
+   / ____/ ____/ ____/  /  |/  /___ _____  _____
+  / /_  / /   / /      / /|_/ / __ `/ __ \/ ___/
+ / __/ / /___/ /___   / /  / / /_/ / /_/ (__  ) 
+/_/    \____/\____/  /_/  /_/\__,_/ .___/____/  
+                                 /_/            
+-->
+<html class="no-js" lang="en">
+
+<head>
+    <title>FCC - Broadband Map Progress Report</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="FCC - Broadband Map Progress Report">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="img/fcc_favicon.ico" rel="shortcut icon" type="image/x-icon">
+    <link href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/mapbox.css" rel="stylesheet">
+    <link href="css/app.css" rel="stylesheet">
+	<link href="css/app1.css" rel="stylesheet">
+	
+</head>
+
+<body style="margin: 0px;">
+
+    <main class="container" style="width: 1075px; margin: 0px">
+        <div class="row" style="width: 1075px;">
+            <div class="col-md-12">
+
+                <div id="search-field" class="input-group">
+                    <div class="search-group">
+                        <div class="search-input">
+                            <div class="input-group">
+							
+                                <div class="input-group-btn">
+                                    <button aria-expanded="false" data-toggle="dropdown" class="btn btn-default dropdown-toggle" type="button"><span id="btn-label">Address</span> <span class="caret"></span></button>
+                                    <ul id="input-search-switch" role="menu" class="dropdown-menu">
+										<li><a href="#" data-value="loc">Address</a></li>
+									    <li><a href="#" data-value="latlon-dms">Lat/Lon (DMS)</a></li>
+										<li><a href="#" data-value="latlon-decimal">Lat/Lon (Decimal)</a></li>
+
+                                        
+                                    </ul>
+                                </div>
+								
+								<input id="input-location" class="form-control" type="search" placeholder="Enter Address" style="display: block">
+								<div id="input-latlon-dms" class="form-control" type="search" placeholder="Enter Latlon deg-min-sec" style="display: none">
+								<table id="table-latlon-dms"><tr>
+								<td>Lat: <input id="lat-deg"   placeholder="deg" style="width: 50px; height: 20px; border: solid 1px #eee"></td>
+								<td><input  id="lat-min" placeholder="min" style="width: 50px; height: 20px; border: solid 1px #eee"></td>
+								<td><input id="lat-sec" placeholder="sec" style="width: 50px; height: 20px; border: solid 1px #eee"></td>
+								<td><select id="select-ns" style="width: 50px; border: solid 1px #eee">
+								<option value="N" selected>N</option>
+								<option value="S">S</option>
+								</select></td>
+								<td>Lon: <input id="lon-deg"   placeholder="deg" style="width: 50px; height: 20px; border: solid 1px #eee"></td>
+								<td><input  id="lon-min" placeholder="min" style="width: 50px; height: 20px; border: solid 1px #eee"></td>
+								<td><input id="lon-sec" placeholder="sec" style="width: 50px; height: 20px; border: solid 1px #eee"></td>
+								<td><select id="select-ew" style="width: 50px; border: solid 1px #eee">
+								<option value="W" selected>W</option>
+								<option value="E">E</option>
+								</select></td>
+								</tr></table>
+								</div>
+								<div id="input-latlon-decimal" class="form-control" type="search" placeholder="Enter Latlon decimal" style="display: none">
+								<table id="table-latlon-decimal"><tr>
+								<td>Latitude: <input id="latitude"   placeholder="41.234567" style="width: 150px; height: 20px; border: solid 1px #eee"></td>
+								<td width=75></td>
+								<td>Longitude: <input id="longitude"   placeholder="-91.234567" style="width: 150px; height: 20px; border: solid 1px #eee"></td>
+
+								</tr></table>
+								</div>
+								
+                                <span class="input-group-btn" id="span-location-search" style="display: table-cell">                        
+									<button class="btn-search btn btn-default" type="submit" id="input-loc-search" title="Location Search" data-toggle="tooltip" data-placement="top"><span class="glyphicon glyphicon-search"></span><span class="sr-only">Location Search</span></button>
+                                </span>
+								
+                                <span class="input-group-btn" id="span-latlon-dms-search" style="display: none">                        
+									<button class="btn-search btn btn-default" id="input-latlon-dms-search" title="DMS Latlon Search" data-toggle="tooltip" data-placement="top"><span class="glyphicon glyphicon-search"></span><span class="sr-only">DMS Lat/Lon Search</span></button>
+                                </span>
+								
+								<span class="input-group-btn" id="span-latlon-decimal-search" style="display: none">                        
+									<button class="btn-search btn btn-default" id="input-latlon-decimal-search" title="Decimal Latlon Search" data-toggle="tooltip" data-placement="top"><span class="glyphicon glyphicon-search"></span><span class="sr-only">Decimal Lat/Lon Search</span></button>
+                                </span>
+								
+							</div>
+                        </div>
+                        <div class="btn-group-loc">
+                            <span class="input-group-btn">  
+								<button class="btn-geoLocation btn btn-default st" title="Get Current Location" data-toggle="tooltip" data-placement="top" id="btn-geoLocation" type="button" data-original-title="Get Current Location">
+								<span class="glyphicon  glyphicon-eye-open"></span><span class="sr-only">Get Current Location</span></button>
+
+							
+							<button class="btn-nationLocation btn btn-default st" title="Nationwide" data-toggle="tooltip" data-placement="top" id="btn-nationLocation" type="button" data-original-title="Nationwide"><span class="icon-nation-1"></span><span class="sr-only">Nationwide</span></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+				
+				</div>
+			</div>
+		</div>
+		<div class="rowxx" style="width: 1000px">
+		
+		<table style="height: 100%"><tr><td>
+			<div class="col-md-8X" style="width: 775px">
+                <div class="map-container">
+					<div id="map">
+					</div>
+					<div id="info_panel" style="width: 100%; background-color: #fff; border: solid 1px #000; visibility: hidden; padding: 5px;" >
+						Info Area
+					</div>
+						
+					<div id="tooltip_box_div" class="map-toolTip" style="z-index: 0">
+                        <div id="feature_display_div" class="tooltipTxt"></div>				
+                    </div>
+					
+                </div>
+
+			</div>
+			
+			</td><td style="width: 5px"></td><td style="vertical-align: top">
+			
+<div class="col-md-4X" style="width: 265px;">
+<table style="background-color: #fff; width: 100%">
+<tr>
+<td style="width: 80px">
+<div id="tab-county">
+County
+</div>
+</td>
+<td>
+<div id="tab-block">Block</div>
+</td>
+</tr>
+<tr>
+<td colspan=2>
+<div id="tab-line">
+</div>
+</td>
+</tr>
+</table>
+
+
+<div id="display-county">
+Click on map or enter an address or lat/lon to show county info.
+</div>
+<div id="display-block">
+Click on map or enter an address or lat/lon to show block info.
+</div>
+
+
+
+
+<div>
+<table style="margin: 5px">
+<tr><td><input type="checkbox" id="checkbox-fixed-1" class="checkbox-fixed" checked>&nbsp;</td><td style="width: 28px; height: 28px;"><div style="width: 20px; height: 20px; background-color: #00ff00; opacity: 0.75"></div></td><td> With fixed broadband 25/3</td></tr>
+<tr><td><input type="checkbox" id="checkbox-fixed-0" class="checkbox-fixed" checked>&nbsp;</td><td style="width: 28px; height: 28px;"><div style="width: 20px; height: 20px; background-color: #ff0000; opacity: 0.75"></div></td><td> Without fixed broadband 25/3</td></tr>
+
+</table>
+
+
+
+</div>
+		
+
+		
+</div>
+</td></tr></table>
+			
+    </div>
+
+
+		
+    </main>
+    <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    <script src="js/vendor/bootstrap.min.js"></script>
+    <script src="js/vendor/jszip.min.js"></script>
+    <script src="js/vendor/jszip-utils.js"></script>
+    <script src="js/vendor/FileSaver.min.js"></script>
+	<script src="js/vendor/Blob.js"></script>
+	<script src='https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.js'></script>
+	<link href='https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.css' rel='stylesheet' />
+	<script src="//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-pip/v0.1.0/leaflet-pip.min.js"></script>
+	   <script src="js/app.js"></script>
+	
+    <script>
+    $(function() {
+        //$("#include-about").load("about.html");
+    });
+    </script>
+
+
+<img id="ajax-loader" src="img/ajax-loader.gif" style="position: absolute; top: -200px; left: -300px">
+<div id="cursor-tip" style="position: absolute; top: -200px; left: -300px"></div>
+<div id="dialog-confirm" title="Set FM Translator location" style="display: none">
+  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span><span id="translator-alert-text">This will place an FM translator</span></p>
+</div>
+
+</body>
+
+</html>

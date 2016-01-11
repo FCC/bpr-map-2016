@@ -1,0 +1,826 @@
+
+	var geo_host = "http://ldevtm-geo02:8080";
+	var geo_space = "fcc";
+
+	var map;
+	var clickedCountyLayer;
+	var clickedBlockLayer;
+	var clickedBlock_fips;
+	var countyLayerData = {"features" : []};
+	var bpr_county_layer_fixed_1;
+	var bpr_county_layer_fixed_0;
+	var bpr_county_layer;
+	
+	var cursorX;
+	var cursorY;
+	var clickX = 0;
+	var clickY = 0;
+	
+	var clickedCountyStyle = {color: "#00f", opacity: 0.5,  fillOpacity: 0.1, fillColor: "#fff", weight: 3};
+	var clickedBlockStyle = {color: "#000", opacity: 0.5,  fillOpacity: 0.1, fillColor: "#fff", weight: 3};
+	var currentSortOrder = {"provider": 0, "technology": -1, "down": -1, "up": -1};
+	
+	
+	function createMap() {
+ 
+     L.mapbox.accessToken = 'pk.eyJ1IjoiY29tcHV0ZWNoIiwiYSI6InMyblMya3cifQ.P8yppesHki5qMyxTc2CNLg';
+     map = L.mapbox.map('map', 'fcc.k74ed5ge', {
+             attributionControl: true,
+             maxZoom: 19,
+			 minZoom: 3
+         })
+         .setView([50, -105], 3);
+		 
+	 baseStreet = L.mapbox.tileLayer('fcc.k74ed5ge').addTo(map);
+     baseSatellite = L.mapbox.tileLayer('fcc.k74d7n0g');
+     baseTerrain = L.mapbox.tileLayer('fcc.k74cm3ol');
+	 
+	var bpr_state = L.tileLayer.wms(geo_host + '/geoserver/wms', {
+		format: 'image/png',
+		transparent: true,
+		layers: geo_space + ':bpr_state_layer'
+	});
+	 
+	bpr_county_layer_fixed_1 = L.tileLayer.wms(geo_host + '/geoserver/wms', {
+		format: 'image/png',
+		transparent: true,
+		layers: geo_space + ':bpr_county_layer',
+		styles: 'bpr_layer_fixed_1'
+	}).setZIndex(999).addTo(map);
+	
+	bpr_county_layer_fixed_0 = L.tileLayer.wms(geo_host + '/geoserver/wms', {
+		format: 'image/png',
+		transparent: true,
+		layers: geo_space + ':bpr_county_layer',
+		styles: 'bpr_layer_fixed_0'
+	}).setZIndex(999).addTo(map);
+	
+	bpr_county_layer = L.tileLayer.wms(geo_host + '/geoserver/wms', {
+		format: 'image/png',
+		transparent: true,
+		layers: geo_space + ':bpr_county_layer'
+	}).setZIndex(999);
+
+	
+	var bpr_county_layer_urban = L.tileLayer.wms(geo_host + '/geoserver/wms', {
+		format: 'image/png',
+		transparent: true,
+		layers: geo_space + ':bpr_county_layer_urban_only'
+	});
+	
+	var bpr_tribal = L.tileLayer.wms(geo_host + '/geoserver/wms', {
+		format: 'image/png',
+		transparent: true,
+		layers: geo_space + ':bpr_tribal'
+	});
+	
+	var bpr_block = L.tileLayer.wms(geo_host + '/geoserver/wms', {
+		format: 'image/png',
+		transparent: true,
+		layers: geo_space + ':bpr_block_layer'
+	});
+	
+	layerControl = new L.Control.Layers({
+         'Street': baseStreet.addTo(map),
+         'Satellite': baseSatellite,
+         'Terrain': baseTerrain
+     }, {
+		'Urban': bpr_county_layer_urban,
+		'Tribal': bpr_tribal
+     }, {
+		position: 'topleft'
+	 }
+	 ).addTo(map);
+		 
+	 L.control.scale({
+         position: 'bottomleft'
+     }).addTo(map);
+
+     geocoder = L.mapbox.geocoder('mapbox.places-v1');
+
+	 map.on("click", function(e) {
+		clickedMap(e);
+	});
+	  
+	}
+	
+function clickedMap(e) {
+	clickX = cursorX;
+	clickY = cursorY;
+	var lat = Math.round(1000000*e.latlng.lat)/1000000.0;
+	var lng = Math.round(1000000*e.latlng.lng)/1000000.0;
+
+	fetchCounty(lat, lng);
+	setTimeout(function () {fetchBlock(lat, lng)}, 200);
+}
+	
+function fetchCounty(lat, lng) {
+
+	var url = geo_host + "/geoserver/" + geo_space + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + geo_space + ":bpr_county&maxFeatures=1&outputFormat=text/javascript&cql_filter=contains(geom,%20POINT(" + lng + " " + lat + "))";
+
+	$.ajax({
+		type: "GET",
+		url: url,
+		dataType: "jsonp",
+		jsonpCallback: "parseResponse",
+		success: function(data) {
+		
+			console.log('county suc');
+			
+			if (data.features.length > 0) {
+
+				if (countyLayerData.features.length == 0 || countyLayerData.features[0].properties.county_fips != data.features[0].properties.county_fips) {
+			
+					if (map.hasLayer(clickedCountyLayer)) {
+						map.removeLayer(clickedCountyLayer);
+					}
+					clickedCountyLayer = L.mapbox.featureLayer(data).setStyle(clickedCountyStyle).addTo(map);
+					map.fitBounds(clickedCountyLayer.getBounds());
+					clickedCountyLayer.on("click", function(e) {
+						clickedMap(e);
+					});
+					
+					//get county info
+					var p = data.features[0].properties;
+					p.urbanunscent = Math.round(p.urbanunscent*1000) / 1000.0;
+					p.ruralunscent = Math.round(p.ruralunscent*1000) / 1000.0;
+					var density1 = parseFloat(p.allden);
+					if (density1 > 10) {
+						var density = Math.round(density1);
+					}
+					else {
+						var density = Math.round(density1 * 100) / 100;
+					}
+					
+					var text = "<span class=\"county-name\">" + p.county_name + ", " + p.state_abbr + "</span><p><p><span class=\"county-title\">Demographics:</span><p><p><p>";
+					
+					text += "<table width=100% class=\"county-table\">";
+					text += "<tr><td>Total Population:</td><td class=\"td-value\"> " + Number(p.alltotalpop).toLocaleString('en') + "</td></tr>" +
+							"<tr><td>Pop Density (pop/mi<sup>2</sup>):</td><td class=\"td-value\"> " + Number(density).toLocaleString('en')  + "</td></tr>" +
+							"<tr><td>Per Capita Income: </td><td class=\"td-value\">" + "$" + Number(p.percapinc).toLocaleString('en') + "</td></tr>" +
+							"<tr><td>Total Pop w/o Access: </td><td class=\"td-value\">" + Number(p.allunspop).toLocaleString('en') + "</td></tr>" +
+							"<tr><td>Percent Urban Pop w/o Access: </td><td class=\"td-value\">" + Number(p.urbanunscent*100).toLocaleString('en') + "%</td></tr>" + 
+							"<tr><td>Percent Rural Pop w/o Access: </td><td class=\"td-value\">" + Number(p.ruralunscent*100).toLocaleString('en') + "%</td></tr>";
+
+							
+					text += "</table>";
+					
+					$('#display-county').html(text);
+					switchTab("county");
+					
+					//clear block data and layer
+					if (map.hasLayer(clickedBlockLayer)) {
+						map.removeLayer(clickedBlockLayer);
+					}
+					$('#display-block').html("Click on map or enter an address to show block info.");
+					
+					
+					countyLayerData = data;
+				
+				}
+				else {
+					switchTab("block");
+				}
+			
+			}
+		
+		}
+
+
+	});
+
+
+}
+	
+function fetchBlock(lat, lng) {
+
+	var url = geo_host + "/geoserver/" + geo_space + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + geo_space + ":bpr_block_layer&maxFeatures=1&outputFormat=text/javascript&cql_filter=contains(geom,%20POINT(" + lng + " " + lat + "))";
+
+	console.log(url)
+	
+	$.ajax({
+		type: "GET",
+		url: url,
+		dataType: "jsonp",
+		jsonpCallback: "parseResponse",
+		success: function(data) {
+		
+		clickedBlockLayerData = data;
+		
+		if (data.features.length > 0) {
+		
+			console.log('block suc');
+			console.log(data)
+			
+			
+			var block_fips = data.features[0].properties.block_fips;
+			clickedBlock_fips = block_fips;
+			
+			var url = geo_host + "/geoserver/" + geo_space + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + geo_space + ":bpr_block_info&maxFeatures=100&outputFormat=text/javascript&cql_filter=block_fips='" + block_fips + "'";
+
+			console.log(url)
+		
+			$.ajax({
+				type: "GET",
+				url: url,
+				dataType: "jsonp",
+				jsonpCallback: "parseResponse",
+				success: function(data) {
+				
+					console.log('block geom');
+					console.log(data)
+					var block_text = "";
+					blockInfoData = [];
+					
+					if (data.features.length > 0) {
+						for (var i =0; i < data.features.length; i++) {
+						var p = data.features[i].properties;
+						blockInfoData.push(p);
+						}
+						
+						blockInfoData.sort(sort_dbaname_0);
+						console.log(blockInfoData)
+						block_text = makeBlockText();
+						if (map.hasLayer(clickedBlockLayer)) {
+							map.removeLayer(clickedBlockLayer);
+						}
+						clickedBlockLayer = L.mapbox.featureLayer(clickedBlockLayerData).setStyle(clickedBlockStyle).addTo(map);
+						//map.fitBounds(clickedBlockLayer.getBounds());
+						clickedBlockLayer.on("click", function(e) {
+						clickedMap(e);
+				});
+				
+					}
+					else {
+						block_text = "No data for clicked block.";
+					
+					}
+					
+					$('#display-block').html(block_text);
+					
+					$('.sort-item').on("click", function(e) {
+						sortItems(e);
+					});
+
+				}
+			});
+		}
+		}
+	});
+	
+}
+	
+function sortItems(e) {
+
+	if (e.target.id == 'span-provider') {
+		if (currentSortOrder.provider == 1) {
+			blockInfoData.sort(sort_dbaname_0);
+			currentSortOrder.provider = 0;
+			currentSortOrder.technology = 0;
+		}
+		else {
+			blockInfoData.sort(sort_dbaname_1);
+			currentSortOrder.provider = 1;
+			currentSortOrder.technology = 1;
+		}
+	}
+	else if (e.target.id == 'span-technology') {
+		if (currentSortOrder.technology == 1) {
+			blockInfoData.sort(sort_technology_0);
+			currentSortOrder.technology = 0;
+			currentSortOrder.down = 0;
+		}
+		else {
+			blockInfoData.sort(sort_technology_1);
+			currentSortOrder.technology = 1;
+			currentSortOrder.down = 1;
+		}
+	}
+	else if (e.target.id == 'span-download-speed') {
+		if (currentSortOrder.down == 1) {
+			blockInfoData.sort(sort_download_0);
+			currentSortOrder.down = 0;
+			currentSortOrder.up = 0;
+		}
+		else {
+			blockInfoData.sort(sort_download_1);
+			currentSortOrder.down = 1;
+			currentSortOrder.up = 1;
+		}
+	}
+	else if (e.target.id == 'span-upload-speed') {
+		if (currentSortOrder.up == 1) {
+			blockInfoData.sort(sort_upload_0);
+			currentSortOrder.up = 0;
+			currentSortOrder.down = 0;
+		}
+		else {
+			blockInfoData.sort(sort_upload_1);
+			currentSortOrder.up = 1;
+			currentSortOrder.down = 1;
+		}
+	}
+	
+	block_text = makeBlockText();
+	$('#display-block').html(block_text);
+	$('.sort-item').on("click", function(e) {
+		sortItems(e);
+	});
+
+
+}
+
+function parseResponse(data) {
+
+}	
+
+function sort_dbaname_0(a,b) {
+	if (a.dbaname == b.dbaname) {
+		if (a.technology < b.technology) {return -1;}
+		else if (a.technology > b.technology) { return 1;}
+		else {return 0;}
+	}
+	else {
+		if (a.dbaname < b.dbaname) {return -1;}
+		else if (a.dbaname > b.dbaname) { return 1;}
+	}
+}
+
+function sort_dbaname_1(a,b) {
+	if (a.dbaname == b.dbaname) {
+		if (a.technology > b.technology) {return -1;}
+		else if (a.technology < b.technology) { return 1;}
+		else {return 0;}
+	}
+	else {
+		if (a.dbaname > b.dbaname) {return -1;}
+		else if (a.dbaname < b.dbaname) { return 1;}
+	}
+}
+
+function sort_technology_0(a,b) {
+	if (a.technology == b.technology) {
+		if (a.download_speed < b.download_speed) {return -1;}
+		else if (a.download_speed > b.download_speed) { return 1;}
+		else {return 0;}
+	}
+	else {
+		if (a.technology < b.technology) {return -1;}
+		else if (a.technology > b.technology) { return 1;}
+	}
+}
+
+function sort_technology_1(a,b) {
+	if (a.technology == b.technology) {
+		if (a.download_speed > b.download_speed) {return -1;}
+		else if (a.download_speed < b.download_speed) { return 1;}
+		else {return 0;}
+	}
+	else {
+		if (a.technology > b.technology) {return -1;}
+		else if (a.technology < b.technology) { return 1;}
+	}
+}
+
+function sort_download_0(a,b) {
+	if (a.download_speed == b.download_speed) {
+		if (a.upload_speed < b.upload_speed) {return -1;}
+		else if (a.upload_speed > b.upload_speed) { return 1;}
+		else {return 0;}
+	}
+	else {
+		if (a.download_speed < b.download_speed) {return -1;}
+		else if (a.download_speed > b.download_speed) { return 1;}
+	}
+}
+
+function sort_download_1(a,b) {
+	if (a.download_speed == b.download_speed) {
+		if (a.upload_speed > b.upload_speed) {return -1;}
+		else if (a.upload_speed < b.upload_speed) { return 1;}
+		else {return 0;}
+	}
+	else {
+		if (a.download_speed > b.download_speed) {return -1;}
+		else if (a.download_speed < b.download_speed) { return 1;}
+	}
+}
+
+function sort_upload_0(a,b) {
+	if (a.upload_speed == b.upload_speed) {
+		if (a.download_speed < b.download_speed) {return -1;}
+		else if (a.download_speed > b.download_speed) { return 1;}
+		else {return 0;}
+	}
+	else {
+		if (a.upload_speed < b.upload_speed) {return -1;}
+		else if (a.upload_speed > b.upload_speed) { return 1;}
+	}
+}
+
+function sort_upload_1(a,b) {
+	if (a.upload_speed == b.upload_speed) {
+		if (a.download_speed > b.download_speed) {return -1;}
+		else if (a.download_speed < b.download_speed) { return 1;}
+		else {return 0;}
+	}
+	else {
+		if (a.upload_speed > b.upload_speed) {return -1;}
+		else if (a.upload_speed < b.upload_speed) { return 1;}
+	}
+}
+
+
+function makeBlockText() {
+	var blockType = clickedBlockLayerData.features[0].properties.urban_rural_ind;
+	var type = "Rural";
+	if (blockType == 'U') {
+		type = "Urban";
+	}
+	var text = "<span class=\"block-title\"> Block FIPS: </span><span class=\"block-text\">" + clickedBlock_fips + "</span><br><br>";
+	text += "<span class=\"block-title\"> Block Type: </span><span class=\"block-text\">" + type + "</span><p>";
+	text += "<table class=\"block-table\"><tr><td><span title=\"Provider Name\">Provider</span> <span id=\"span-provider\" class=\"sort-item glyphicon  glyphicon-sort\"></span></td>" + 
+		"<td class=\"td-space\"></td><td><span title=\"Technology Type\">Tech</span> <span id=\"span-technology\" class=\"sort-item glyphicon  glyphicon-sort\"></span></td>" + 
+		"<td class=\"td-right\"><span title=\"Download Speed (mbps)\">Down</span> <span id=\"span-download-speed\" class=\"sort-item glyphicon  glyphicon-sort\"></span></td>" + 
+		"<td class=\"td-space\"></td><td class=\"td-right\"><span title=\"Upload Speed (mbps)\">Up</span> <span id=\"span-upload-speed\" class=\"sort-item glyphicon  glyphicon-sort\"></span></td></tr>";
+	for (var i = 0; i < blockInfoData.length; i++) {
+		text += "<tr><td><span title=\"" + blockInfoData[i].dbaname + "\">" + blockInfoData[i].dbaname.substr(0,10) + "<td class=\"td-space\"></td></td><td>" + blockInfoData[i].technology +
+		"</td><td class=\"td-right\">" + blockInfoData[i].download_speed + "<td class=\"td-space\"></td><td class=\"td-right\">" + blockInfoData[i].upload_speed + "</td></tr>"; 
+	}
+	text += "</table>";
+
+	return text;
+}	
+
+function showLoader(a) {
+if (a == "clicked") {
+$('#ajax-loader').css({"top": clickY-16, "left": clickX-16});
+}
+else if (a == "center") {
+var scrollTop     = $(window).scrollTop();
+    var mapTop = $('#map').offset().top;
+	var mapLeft = $('#map').offset().left;
+	var mapWidth = $('#map').css("width").replace("px", "");
+	var mapHeight = $('#map').css("height").replace("px", "");
+	var top = mapTop - scrollTop + Math.round(mapHeight/2);
+	var left = mapLeft + Math.round(mapWidth/2);
+	$('#ajax-loader').css({"top": top, "left": left});
+}
+}
+
+function hideLoader() {
+$('#ajax-loader').css({"top": "-200px", "left": "-300px"});
+}
+
+	
+function search_dms() {
+
+var lat_deg = $('#lat-deg').val();
+var lat_min = $('#lat-min').val();
+var lat_sec = $('#lat-sec').val();
+var ns = $('#select-ns').val();
+var lon_deg = $('#lon-deg').val();
+var lon_min = $('#lon-min').val();
+var lon_sec = $('#lon-sec').val();
+var ew = $('#select-ew').val();
+if (lat_deg == "" || lon_deg == "") {
+alert("empty fields");
+return;
+}
+
+lat_deg = Math.floor(lat_deg);
+lat_min = Math.floor(lat_min);
+if (lat_sec == "") {
+	lat_sec = 0;
+}
+lat_sec = parseFloat(lat_sec);
+var lat = lat_deg + lat_min/60.0 + lat_sec/3600.0;
+lat = Math.round(lat*1000000) / 1000000.0;
+
+if (ns == "S") {
+	lat = -1 * lat;
+}
+
+lon_deg = Math.floor(lon_deg);
+lon_min = Math.floor(lon_min);
+if (lon_sec == "") {
+	lon_sec = 0;
+}
+lon_sec = parseFloat(lon_sec);
+var lon = lon_deg + lon_min/60.0 + lon_sec/3600.0;
+lon = Math.round(lon*1000000)/1000000.0;
+
+if (ew == "W") {
+	lon = -1 * lon;
+}
+
+if (Math.abs(lat) > 90 || Math.abs(lon) > 180) {
+	alert("Lat/Lon values out of range");
+	return;
+}
+
+	fetchCounty(lat, lon);
+	setTimeout(function () {fetchBlock(lat, lon)}, 200);
+}
+	
+
+function search_decimal() {
+
+var lat = $('#latitude').val().replace(/ +/g, "");
+var lon = $('#longitude').val().replace(/ +/g, "");
+
+if (lat == "" || lon == "") {
+alert("Please enter lat/lon");
+return;
+}
+
+if (Math.abs(lat) > 90 || Math.abs(lon) > 180) {
+	alert("Lat/Lon values out of range");
+	return;
+}
+
+	fetchCounty(lat, lon);
+	setTimeout(function () {fetchBlock(lat, lon)}, 200);
+
+} 
+	
+function locChange() {
+	var loc = $("#input-location").val();
+	geocoder.query(loc, codeMap);
+	
+	function codeMap(err, data) {
+
+	if (data.results.features.length == 0) {
+		alert("No results found");
+		return;
+	}
+	var lat = data.latlng[0];
+	var lon = data.latlng[1];
+	
+	fetchCounty(lat, lon);
+	setTimeout(function () {fetchBlock(lat, lon)}, 200);
+
+ }
+}
+
+
+function searchLocation() {
+locChange();
+
+}
+
+function switchTab(tab) {
+
+	if (tab == "county") {
+		$("#display-county").css("display", "block");
+		$("#display-block").css("display", "none");
+
+		//highlight county tab
+		$('#tab-county').css("background-color", "#666ccc");
+		$('#tab-county').css("color", "#ffffff");
+		//de-highlight block tab
+		$('#tab-block').css("background-color", "#ffffff");
+		$('#tab-block').css("color", "#000000");
+	}
+	else if (tab == "block") {
+		$("#display-county").css("display", "none");
+		$("#display-block").css("display", "block");
+
+		//highlight block tab
+		$('#tab-block').css("background-color", "#666ccc");
+		$('#tab-block').css("color", "#ffffff");
+		//de-highlight county tab
+		$('#tab-county').css("background-color", "#ffffff");
+		$('#tab-county').css("color", "#000000");
+	}
+
+}
+
+	
+function setupListener() {
+
+$('#tab-county, #tab-block').on("click", function(e) {
+var id = e.target.id;
+if (id == "tab-block") {
+
+switchTab("block");
+
+//zoom to block
+if (map.hasLayer(clickedBlockLayer)) {
+map.fitBounds(clickedBlockLayer.getBounds());
+}
+
+}
+if (id == "tab-county") {
+switchTab("county");
+//zoom to county
+if (map.hasLayer(clickedCountyLayer)) {
+map.fitBounds(clickedCountyLayer.getBounds());
+}
+
+}
+
+});
+
+
+$('.checkbox-fixed').on("click", function(e) {
+var id = e.target.id;
+if (id == "checkbox-fixed-1") {
+if($('#' + id).prop('checked')) {
+//remove layer
+if (map.hasLayer(bpr_county_layer_fixed_1)) {
+map.removeLayer(bpr_county_layer_fixed_1);
+}
+//add layer
+bpr_county_layer_fixed_1.addTo(map);
+}
+else {
+//remove layer
+if (map.hasLayer(bpr_county_layer_fixed_1)) {
+map.removeLayer(bpr_county_layer_fixed_1);
+}
+}
+}
+else if (id == "checkbox-fixed-0") {
+if($('#' + id).prop('checked')) {
+//remove layer
+if (map.hasLayer(bpr_county_layer_fixed_0)) {
+map.removeLayer(bpr_county_layer_fixed_0);
+}
+//add layer
+bpr_county_layer_fixed_0.addTo(map);
+}
+else {
+//remove layer
+if (map.hasLayer(bpr_county_layer_fixed_0)) {
+map.removeLayer(bpr_county_layer_fixed_0);
+}
+}
+
+}
+
+
+
+});
+
+
+
+
+$(document).on("mousemove", function(e) {
+cursorX = e.pageX;
+cursorY = e.pageY;
+});
+
+     $("#input-loc-search").on("click", function(e) {
+         e.preventDefault();
+         locChange();
+     });
+
+	 $("#input-latlon-dms-search").on("click", function(e) {
+         e.preventDefault();
+         search_dms();
+     });
+	 
+	 $("#input-latlon-decimal-search").on("click", function(e) {
+         e.preventDefault();
+         search_decimal();
+     });
+	 
+	$("#input-search-switch").on('click', 'a', function(e) {
+		var search = $(e.currentTarget).data('value');
+		
+		e.preventDefault();	
+
+		if (search == 'loc') {
+			$("#input-latlon-dms").css('display', 'none');
+			$("#span-latlon-dms-search").css('display', 'none');
+			$("#input-latlon-decimal").css('display', 'none');
+			$("#span-latlon-decimal-search").css('display', 'none');
+
+			$("#input-location").css('display', 'block');
+			$("#span-location-search").css('display', 'table-cell');
+			$("#btn-label").text('Address');
+        }
+		
+        else if (search == 'latlon-dms') {
+		    $("#input-location").css('display', 'none');
+            $("#span-location-search").css('display', 'none');
+			$("#input-latlon-decimal").css('display', 'none');
+			$("#span-latlon-decimal-search").css('display', 'none');
+		
+            $("#input-latlon-dms").css('display', 'block');
+            $("#span-latlon-dms-search").css('display', 'table-cell');
+			$("#btn-label").text('Lat/lon (DMS)');
+        }
+		
+		
+        else if (search == 'latlon-decimal') {
+		    $("#input-location").css('display', 'none');
+            $("#span-location-search").css('display', 'none');
+			$("#input-latlon-dms").css('display', 'none');
+			$("#span-latlon-dms-search").css('display', 'none');
+			
+            $("#input-latlon-decimal").css('display', 'block');
+            $("#span-latlon-decimal-search").css('display', 'table-cell');
+			$("#btn-label").text('Lat/Lon (decimal)');
+        }
+	
+	});
+	
+	$('#input-location').keypress(function (e) {
+	 var key = e.which;
+	 if(key == 13)  // the enter key code
+	  {
+	    $('#input-loc-search').click();
+	    return false;  
+	  }
+	}); 
+	
+	
+	$('#lat-deg, #lon-deg, #lat-min, #lon-min, #lat-sec, #lon-sec, #select-ns, #select-ew').keypress(function (e) {
+	 var key = e.which;
+	 if(key == 13)  // the enter key code
+	  {
+	    $('#input-latlon-dms-search').click();
+	    return false;  
+	  }
+	});
+	
+		
+	$('#latitude, #longitude').keypress(function (e) {
+	 var key = e.which;
+	 if(key == 13)  // the enter key code
+	  {
+	    $('#input-latlon-decimal-search').click();
+	    return false;  
+	  }
+	});
+	
+     $('#btn-geoLocation').click(function(event) {
+         if (navigator.geolocation) {
+             navigator.geolocation.getCurrentPosition(function(position) {
+                 var geo_lat = position.coords.latitude;
+                 var geo_lon = position.coords.longitude;
+                 var geo_acc = position.coords.accuracy;
+				 
+				 geo_lat = Math.round(geo_lat * 1000000) / 1000000.0;
+				 geo_lon = Math.round(geo_lon * 1000000) / 1000000.0;
+
+                fetchCounty(geo_lat, geo_lon);
+				setTimeout(function () {fetchBlock(geo_lat, geo_lon)}, 200);
+
+             }, function(error) {
+                 //alert('Error occurred. Error code: ' + error.code);    
+                 alert('Sorry, your current location could not be found. \nPlease use the search box to enter your location.');
+             }, {
+                 timeout: 4000
+             });
+         } else {
+             alert('Sorry, your current location could not be found. \nPlease use the search box to enter your location.');
+         }
+
+         return false;
+     });
+
+	$("#btn-nationLocation").on("click", function() {
+         //map.fitBounds(bounds_us);
+		 map.setView([50, -105], 3);
+     });
+	
+
+	$( "#input-location" ).autocomplete({
+        source: function( request, response ) {
+			var location = request.term;
+			geocoder.query(location, processAddress);
+			
+			function processAddress(err, data) {
+			
+			var f = data.results.features;
+			var addresses = [];
+			for (var i = 0; i < f.length; i++) {
+				addresses.push(f[i].place_name);
+			}
+			response(addresses);
+
+			}
+        },
+        minLength: 3,
+        select: function( event, ui ) {
+            setTimeout(function() {searchLocation();}, 200);
+        },
+        open: function() {
+			$( this ).removeClass( "ui-corner-all" ).addClass( "ui-corner-top" );
+        },
+        close: function() {
+			$( this ).removeClass( "ui-corner-top" ).addClass( "ui-corner-all" );
+        }
+	});
+	
+	
+}
+
+
+$(document).ready(function() {
+	createMap();
+	setupListener();
+});

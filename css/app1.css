@@ -1,0 +1,56 @@
+
+.county-table {font-size: 12px; color: #000000}
+.county-table tr {font-color: #ccccaa; height: 20px; border-bottom: solid 1px #dddddd}
+.county-table td {padding-top: 5px; padding-bottom: 5px}
+
+.county-name {font-size: 15px; font-weight: bold; }
+.county-title {font-size: 12px; font-weight: bold; color: #999999}
+.td-value {text-align: right}
+
+.block-table {width: 100%; font-size: 12px; color: #000000}
+.block-table tr {font-color: #ccccaa; height: 20px; border-bottom: solid 1px #dddddd;}
+.block-table tr:first-child{font-weight: bold; border-bottom: solid 1px #444444;}
+.block-table tr:first-child:hover{background-color: #ffffff}
+.block-table tr:hover{background-color: #eeeeee}
+.block-table td {padding-top: 5px; padding-bottom: 5px}
+.td-right {text-align: right}
+.td-space {width: 5px}
+.block-title {font-weight: bold;}
+.sort-item {cursor: pointer}
+
+#tab-county {
+cursor: pointer;
+display: block;
+width: 75px;
+height: 30px;
+margin-left: 10px;
+background-color: #666ccc;
+border-radius: 10px 10px 0px 0px;
+color: #fff;
+font-weight: bold;
+font-size: 14px;
+text-align: center;
+padding-top: 10px }
+
+#tab-block {
+cursor: pointer;
+display: block;
+width: 75px;
+height: 30px;
+margin-left: 10px;
+background-color: #000ff;
+border-radius: 10px 10px 0px 0px;
+color: #000;
+font-weight: bold;
+font-size: 14px;
+text-align: center;
+padding-top: 10px}
+
+#tab-county:hover, #tab-block:hover {border: solid 1px #aacc00}
+
+
+#tab-line {margin-left: 10px; margin-right: 0px; height: 5px; background-color: #aacc00}
+#display-county {height: 450px; display: block; margin-left: 10px; margin-top: 5px; overflow: auto; border: solid 0px #000;}
+#display-block {height: 450px; display: none; margin-left: 10px; margin-top: 5px; overflow: auto; border: solid 0px #000}
+
+body {font-size: 12px; font-family: arial; font-color: #000; cursor: default; margin: 0px; line-height: 100%}

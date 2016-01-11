@@ -439,10 +439,10 @@ function makeBlockText() {
 	}
 	var text = "<span class=\"block-title\"> Block FIPS: </span><span class=\"block-text\">" + clickedBlock_fips + "</span><br><br>";
 	text += "<span class=\"block-title\"> Block Type: </span><span class=\"block-text\">" + type + "</span><p>";
-	text += "<table class=\"block-table\"><tr><td><span title=\"Provider Name\">Provider</span> <span id=\"span-provider\" class=\"sort-item glyphicon  glyphicon-sort\"></span></td>" + 
-		"<td class=\"td-space\"></td><td><span title=\"Technology Type\">Tech</span> <span id=\"span-technology\" class=\"sort-item glyphicon  glyphicon-sort\"></span></td>" + 
-		"<td class=\"td-right\"><span title=\"Download Speed (mbps)\">Down</span> <span id=\"span-download-speed\" class=\"sort-item glyphicon  glyphicon-sort\"></span></td>" + 
-		"<td class=\"td-space\"></td><td class=\"td-right\"><span title=\"Upload Speed (mbps)\">Up</span> <span id=\"span-upload-speed\" class=\"sort-item glyphicon  glyphicon-sort\"></span></td></tr>";
+	text += "<table class=\"block-table\"><tr><td><span title=\"Provider Name\">Provider</span> <span id=\"span-provider\" class=\"sort-item ui-icon ui-icon-triangle-2-n-s\" style=\"display: inline-block\"></span>  </td>" + 
+		"<td class=\"td-space\"></td><td><span title=\"Technology Type\">Tech</span> <span id=\"span-technology\" class=\"sort-item glyphicon  ui-icon ui-icon-triangle-2-n-s\" style=\"display: inline-block\"></span></td>" + 
+		"<td class=\"td-right\"><span title=\"Download Speed (mbps)\">Down</span> <span id=\"span-download-speed\" class=\"sort-item glyphicon  ui-icon ui-icon-triangle-2-n-s\" style=\"display: inline-block\"></span></td>" + 
+		"<td class=\"td-space\"></td><td class=\"td-right\"><span title=\"Upload Speed (mbps)\">Up</span> <span id=\"span-upload-speed\" class=\"sort-item ui-icon ui-icon-triangle-2-n-s\" style=\"display: inline-block\"></span></td></tr>";
 	for (var i = 0; i < blockInfoData.length; i++) {
 		text += "<tr><td><span title=\"" + blockInfoData[i].dbaname + "\">" + blockInfoData[i].dbaname.substr(0,10) + "<td class=\"td-space\"></td></td><td>" + blockInfoData[i].technology +
 		"</td><td class=\"td-right\">" + blockInfoData[i].download_speed + "<td class=\"td-space\"></td><td class=\"td-right\">" + blockInfoData[i].upload_speed + "</td></tr>"; 

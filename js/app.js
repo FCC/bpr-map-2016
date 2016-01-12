@@ -10,6 +10,7 @@
 	var bpr_county_layer_fixed_1;
 	var bpr_county_layer_fixed_0;
 	var bpr_county_layer;
+	var locationMarker;
 	
 	var cursorX;
 	var cursorY;
@@ -166,20 +167,20 @@ function fetchCounty(lat, lng) {
 					text += "</table>";
 					
 					$('#display-county').html(text);
-					switchTab("county");
+					//switchTab("county");
 					
 					//clear block data and layer
-					if (map.hasLayer(clickedBlockLayer)) {
-						map.removeLayer(clickedBlockLayer);
-					}
-					$('#display-block').html("Click on map or enter an address to show block info.");
+					//if (map.hasLayer(clickedBlockLayer)) {
+					//	map.removeLayer(clickedBlockLayer);
+					//}
+					//$('#display-block').html("Click on map or enter an address to show block info.");
 					
 					
 					countyLayerData = data;
 				
 				}
 				else {
-					switchTab("block");
+					//switchTab("block");
 				}
 			
 			}
@@ -248,7 +249,8 @@ function fetchBlock(lat, lng) {
 						//map.fitBounds(clickedBlockLayer.getBounds());
 						clickedBlockLayer.on("click", function(e) {
 						clickedMap(e);
-				});
+						});
+						setLocationMarker(lat, lng);
 				
 					}
 					else {
@@ -269,6 +271,24 @@ function fetchBlock(lat, lng) {
 	});
 	
 }
+
+function setLocationMarker(lat, lon) {
+	if (map.hasLayer(locationMarker)) {
+		map.removeLayer(locationMarker);
+	}
+	locationMarker = L.marker([lat, lon],{title: "click to zoom"}).addTo(map);
+	locationMarker.on("click", function(e) {
+	zoomToBlock(e);
+	});
+}
+
+
+function zoomToBlock(e) {
+	if (map.hasLayer(clickedBlockLayer)) {
+	map.fitBounds(clickedBlockLayer.getBounds());
+	}
+}
+
 	
 function sortItems(e) {
 
@@ -770,7 +790,7 @@ cursorY = e.pageY;
 				setTimeout(function () {fetchBlock(geo_lat, geo_lon)}, 200);
 
              }, function(error) {
-                 //alert('Error occurred. Error code: ' + error.code);    
+                 //alert('Error occurred. Error code: ' + error.code);			 
                  alert('Sorry, your current location could not be found. \nPlease use the search box to enter your location.');
              }, {
                  timeout: 4000

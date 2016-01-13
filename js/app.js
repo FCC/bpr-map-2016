@@ -115,6 +115,39 @@ function clickedMap(e) {
 	setTimeout(function () {fetchBlock(lat, lng)}, 200);
 }
 	
+	
+function addComma(a) {
+	var a = "" + a;
+	if (a.length == 0) {
+	return a;
+	}
+
+	var decimal_part = "";
+	var integer_part = a;
+	if (a.match(/\./)) {
+	integer_part = a.split(".")[0];
+	decimal_part = a.split(".")[1];
+	}
+
+	var len = integer_part.length;
+	var str = "";
+	for (var i = 0; i < len; i++) {
+	if ((len - i -1) % 3 == 0 && (len - i -1) > 0) {
+	str += integer_part[i] + ",";
+	} 
+	else {
+	str += integer_part[i];
+	}
+	}
+
+	var ret = str;
+	if (decimal_part != "") {
+	var ret = str + "." + decimal_part
+	}
+
+	return ret;
+}
+	
 function fetchCounty(lat, lng) {
 
 	var url = geo_host + "/geoserver/" + geo_space + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + geo_space + ":bpr_county&maxFeatures=1&outputFormat=text/javascript&cql_filter=contains(geom,%20POINT(" + lng + " " + lat + "))";
@@ -142,9 +175,12 @@ function fetchCounty(lat, lng) {
 					});
 					
 					//get county info
+					
+					var a = addComma(12345678.998);
+					
 					var p = data.features[0].properties;
-					p.urbanunscent = Math.round(p.urbanunscent*1000) / 1000.0;
-					p.ruralunscent = Math.round(p.ruralunscent*1000) / 1000.0;
+					var urbanunscent = Math.round(p.urbanunscent*100*10) / 10;
+					var ruralunscent = Math.round(p.ruralunscent*100*10) / 10;
 					var density1 = parseFloat(p.allden);
 					if (density1 > 10) {
 						var density = Math.round(density1);
@@ -156,12 +192,12 @@ function fetchCounty(lat, lng) {
 					var text = "<span class=\"county-name\">" + p.county_name + ", " + p.state_abbr + "</span><p><p><span class=\"county-title\">Demographics:</span><p><p><p>";
 					
 					text += "<table width=100% class=\"county-table\">";
-					text += "<tr><td>Total Population:</td><td class=\"td-value\"> " + Number(p.alltotalpop).toLocaleString('en') + "</td></tr>" +
-							"<tr><td>Pop Density (pop/mi<sup>2</sup>):</td><td class=\"td-value\"> " + Number(density).toLocaleString('en')  + "</td></tr>" +
-							"<tr><td>Per Capita Income: </td><td class=\"td-value\">" + "$" + Number(p.percapinc).toLocaleString('en') + "</td></tr>" +
-							"<tr><td>Total Pop w/o Access: </td><td class=\"td-value\">" + Number(p.allunspop).toLocaleString('en') + "</td></tr>" +
-							"<tr><td>Percent Urban Pop w/o Access: </td><td class=\"td-value\">" + Number(p.urbanunscent*100).toLocaleString('en') + "%</td></tr>" + 
-							"<tr><td>Percent Rural Pop w/o Access: </td><td class=\"td-value\">" + Number(p.ruralunscent*100).toLocaleString('en') + "%</td></tr>";
+					text += "<tr><td>Total Population:</td><td class=\"td-value\"> " + addComma(p.alltotalpop) + "</td></tr>" +
+							"<tr><td>Pop Density (pop/mi<sup>2</sup>):</td><td class=\"td-value\"> " + addComma(density)  + "</td></tr>" +
+							"<tr><td>Per Capita Income: </td><td class=\"td-value\">" + "$" + addComma(p.percapinc) + "</td></tr>" +
+							"<tr><td>Total Pop w/o Access: </td><td class=\"td-value\">" + addComma(p.allunspop) + "</td></tr>" +
+							"<tr><td>Percent Urban Pop w/o Access: </td><td class=\"td-value\">" + urbanunscent + "%</td></tr>" + 
+							"<tr><td>Percent Rural Pop w/o Access: </td><td class=\"td-value\">" + ruralunscent + "%</td></tr>";
 
 							
 					text += "</table>";
@@ -276,7 +312,7 @@ function setLocationMarker(lat, lon) {
 	if (map.hasLayer(locationMarker)) {
 		map.removeLayer(locationMarker);
 	}
-	locationMarker = L.marker([lat, lon],{title: "click to zoom"}).addTo(map);
+	locationMarker = L.marker([lat, lon],{title: ""}).addTo(map);
 	locationMarker.on("click", function(e) {
 	zoomToBlock(e);
 	});

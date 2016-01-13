@@ -27,7 +27,7 @@
      L.mapbox.accessToken = 'pk.eyJ1IjoiY29tcHV0ZWNoIiwiYSI6InMyblMya3cifQ.P8yppesHki5qMyxTc2CNLg';
      map = L.mapbox.map('map', 'fcc.k74ed5ge', {
              attributionControl: true,
-             maxZoom: 19,
+             maxZoom: 15,
 			 minZoom: 3
          })
          .setView([50, -105], 3);

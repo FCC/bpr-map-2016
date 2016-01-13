@@ -21,6 +21,7 @@
     <link href="css/mapbox.css" rel="stylesheet">
     <link href="css/app.css" rel="stylesheet">
 	<link href="css/app1.css" rel="stylesheet">
+	<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
 	
 </head>
 
@@ -91,7 +92,7 @@
                         <div class="btn-group-loc">
                             <span class="input-group-btn">  
 								<button class="btn-geoLocation btn btn-default st" title="Get Current Location" data-toggle="tooltip" data-placement="top" id="btn-geoLocation" type="button" data-original-title="Get Current Location">
-								<span class="glyphicon  glyphicon-eye-open"></span><span class="sr-only">Get Current Location</span></button>
+								<span class="fa fa-location-arrow"></span><span class="sr-only">Get Current Location</span></button>
 
 							
 							<button class="btn-nationLocation btn btn-default st" title="Nationwide" data-toggle="tooltip" data-placement="top" id="btn-nationLocation" type="button" data-original-title="Nationwide"><span class="icon-nation-1"></span><span class="sr-only">Nationwide</span></button>
@@ -429,8 +430,7 @@
 				 geo_lat = Math.round(geo_lat * 1000000) / 1000000.0;
 				 geo_lon = Math.round(geo_lon * 1000000) / 1000000.0;
 
-                fetchCounty(geo_lat, geo_lon);
-				setTimeout(function () {fetchBlock(geo_lat, geo_lon)}, 200);
+				map.setView([geo_lat, geo_lon], 14);
 
              }, function(error) {
                  //alert('Error occurred. Error code: ' + error.code);			 

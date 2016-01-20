@@ -40,7 +40,7 @@
                                     <button aria-expanded="false" data-toggle="dropdown" class="btn btn-default dropdown-toggle" type="button"><span id="btn-label">Address</span> <span class="caret"></span></button>
                                     <ul id="input-search-switch" role="menu" class="dropdown-menu">
 										<li><a href="#" data-value="loc">Address</a></li>
-										<li><a href="#" data-value="latlon-decimal">Lat/Lon</a></li>  
+										<li><a href="#" data-value="latlon-decimal">Coordinates</a></li>  
                                     </ul>
                                 </div>
 								
@@ -153,10 +153,10 @@
      baseSatellite = L.mapbox.tileLayer('fcc.k74d7n0g');
      baseTerrain = L.mapbox.tileLayer('fcc.k74cm3ol');
 	 
-	 layer0 = L.mapbox.tileLayer('fcc.976b85c3').setZIndex(1).addTo(map);
-	 layer1 = L.mapbox.tileLayer('fcc.3494a500').setZIndex(1).addTo(map);
-	 layer2 = L.mapbox.tileLayer('fcc.9b99d614').setZIndex(1).addTo(map);
-	 layer3 = L.mapbox.tileLayer('fcc.40257038').setZIndex(1).addTo(map);
+	 layer0 = L.mapbox.tileLayer('fcc.976b85c3').setZIndex(11).addTo(map);
+	 layer1 = L.mapbox.tileLayer('fcc.3494a500').setZIndex(12).addTo(map);
+	 layer2 = L.mapbox.tileLayer('fcc.9b99d614').setZIndex(13).addTo(map);
+	 layer3 = L.mapbox.tileLayer('fcc.40257038').setZIndex(14).addTo(map);
 	 layerList = [layer0, layer1, layer2, layer3];
 	 
 	var bpr_county_layer_urban = L.tileLayer.wms(geo_host + '/geoserver/wms', {
@@ -376,7 +376,7 @@
 			
             $("#input-latlon-decimal").css('display', 'block');
             $("#span-latlon-decimal-search").css('display', 'table-cell');
-			$("#btn-label").text('Lat/Lon');
+			$("#btn-label").text('Coordinates');
         }
 	
 	});

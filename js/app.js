@@ -114,6 +114,20 @@ function clickedMap(e) {
 	fetchCounty(lat, lng);
 	setTimeout(function () {fetchBlock(lat, lng)}, 200);
 }
+
+
+function writeIntro() {
+
+var text = "<p style=\"line-height: 150%\">Click on the map or search for a location using an address or coordinates to display provider and demographic information.<br><br>" +
+	"Example Searches:<br><ul>" +
+	"<li>148 Lafayette Street, New York, NY 10013<br>" +
+	"<li>Lumberport, WV" +
+	"<li>Latitude: 40.566353, Longitude: -105.094573" +
+	"</ul></p>";
+	
+$('#display-block').html(text);
+
+}
 	
 	
 function addComma(a) {
@@ -879,4 +893,5 @@ cursorY = e.pageY;
 $(document).ready(function() {
 	createMap();
 	setupListener();
+	writeIntro();
 });

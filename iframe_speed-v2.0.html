@@ -39,32 +39,14 @@
                                     <button aria-expanded="false" data-toggle="dropdown" class="btn btn-default dropdown-toggle" type="button"><span id="btn-label">Address</span> <span class="caret"></span></button>
                                     <ul id="input-search-switch" role="menu" class="dropdown-menu">
 										<li><a href="#" data-value="loc">Address</a></li>
-									    <li><a href="#" data-value="latlon-dms">Lat/Lon (DMS)</a></li>
-										<li><a href="#" data-value="latlon-decimal">Lat/Lon (Decimal)</a></li>
+										<li><a href="#" data-value="latlon-decimal">Lat/Lon</a></li>
 
                                         
                                     </ul>
                                 </div>
 								
 								<input id="input-location" class="form-control" type="search" placeholder="Enter Address" style="display: block">
-								<div id="input-latlon-dms" class="form-control" type="search" placeholder="Enter Latlon deg-min-sec" style="display: none">
-								<table id="table-latlon-dms"><tr>
-								<td>Lat: <input id="lat-deg"   placeholder="deg" style="width: 50px; height: 20px; border: solid 1px #eee"></td>
-								<td><input  id="lat-min" placeholder="min" style="width: 50px; height: 20px; border: solid 1px #eee"></td>
-								<td><input id="lat-sec" placeholder="sec" style="width: 50px; height: 20px; border: solid 1px #eee"></td>
-								<td><select id="select-ns" style="width: 50px; border: solid 1px #eee">
-								<option value="N" selected>N</option>
-								<option value="S">S</option>
-								</select></td>
-								<td>Lon: <input id="lon-deg"   placeholder="deg" style="width: 50px; height: 20px; border: solid 1px #eee"></td>
-								<td><input  id="lon-min" placeholder="min" style="width: 50px; height: 20px; border: solid 1px #eee"></td>
-								<td><input id="lon-sec" placeholder="sec" style="width: 50px; height: 20px; border: solid 1px #eee"></td>
-								<td><select id="select-ew" style="width: 50px; border: solid 1px #eee">
-								<option value="W" selected>W</option>
-								<option value="E">E</option>
-								</select></td>
-								</tr></table>
-								</div>
+
 								<div id="input-latlon-decimal" class="form-control" type="search" placeholder="Enter Latlon decimal" style="display: none">
 								<table id="table-latlon-decimal"><tr>
 								<td>Latitude: <input id="latitude"   placeholder="41.234567" style="width: 150px; height: 20px; border: solid 1px #eee"></td>
@@ -152,10 +134,16 @@
 	
 	var map;
 	var layerList;
-	var layerProvider0;
-	var layerProvider1;
-	var layerProvider2;
-	var layerProvider3;
+	var layer0;
+	var layer1;
+	var layer2;
+	var layer3;
+	var layer4;
+	var layer5;
+	
+	var geo_host = "http://ldevtm-geo02:8080";
+	var geo_space = "fcc";
+	
 	
 	function createMap() {
  
@@ -175,17 +163,29 @@
 	 layer1 = L.mapbox.tileLayer('fcc.0376ced1').setZIndex(2).addTo(map);
 	 layer2 = L.mapbox.tileLayer('fcc.4272cf6a').setZIndex(3).addTo(map);
 	 layer3 = L.mapbox.tileLayer('fcc.438e9976').setZIndex(4).addTo(map);
-	 layer4 = L.mapbox.tileLayer('fcc.fffd995f').setZIndex(4).addTo(map);
-	 layer5 = L.mapbox.tileLayer('fcc.91a6e516').setZIndex(5).addTo(map);
+	 layer4 = L.mapbox.tileLayer('fcc.fffd995f').setZIndex(5).addTo(map);
+	 layer5 = L.mapbox.tileLayer('fcc.91a6e516').setZIndex(6).addTo(map);
 	 layerList = [layer0, layer1, layer2, layer3, layer4, layer5];
+	 
+	var bpr_county_layer_urban = L.tileLayer.wms(geo_host + '/geoserver/wms', {
+		format: 'image/png',
+		transparent: true,
+		layers: geo_space + ':bpr_county_layer_urban_only'
+	});
+	
+	var bpr_tribal = L.tileLayer.wms(geo_host + '/geoserver/wms', {
+		format: 'image/png',
+		transparent: true,
+		layers: geo_space + ':bpr_tribal'
+	});
 	 
 	layerControl = new L.Control.Layers({
          'Street': baseStreet.addTo(map),
          'Satellite': baseSatellite,
          'Terrain': baseTerrain
      }, {
-		'Tribal areas':L.mapbox.tileLayer('fcc.86361f48'),
-		'Urban areas':L.mapbox.tileLayer('fcc.74e2dac3')
+		'Urban': bpr_county_layer_urban,
+		'Tribal': bpr_tribal
      }, {
 		position: 'topleft'
 	 }
@@ -384,7 +384,7 @@
 			
             $("#input-latlon-decimal").css('display', 'block');
             $("#span-latlon-decimal-search").css('display', 'table-cell');
-			$("#btn-label").text('Lat/Lon (decimal)');
+			$("#btn-label").text('Lat/Lon');
         }
 	
 	});

@@ -778,7 +778,7 @@ cursorY = e.pageY;
 			
             $("#input-latlon-decimal").css('display', 'block');
             $("#span-latlon-decimal-search").css('display', 'table-cell');
-			$("#btn-label").text('Lat/Lon (decimal)');
+			$("#btn-label").text('Lat/Lon');
         }
 	
 	});

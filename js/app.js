@@ -32,7 +32,7 @@
              maxZoom: 15,
 			 minZoom: 3
          })
-         .setView([50, -105], 3);
+         .setView([50, -115], 3);
 		 
 	 baseStreet = L.mapbox.tileLayer('fcc.k74ed5ge').addTo(map);
      baseSatellite = L.mapbox.tileLayer('fcc.k74d7n0g');
@@ -861,7 +861,7 @@ cursorY = e.pageY;
 
 	$("#btn-nationLocation").on("click", function() {
          //map.fitBounds(bounds_us);
-		 map.setView([50, -105], 3);
+		 map.setView([50, -115], 3);
      });
 	
 

@@ -10,6 +10,8 @@
 	var bpr_county_layer_fixed_1;
 	var bpr_county_layer_fixed_0;
 	var bpr_county_layer;
+	var bpr_county_layer_urban;
+	var bpr_tribal;
 	var locationMarker;
 	
 	var cursorX;
@@ -47,14 +49,14 @@
 		transparent: true,
 		layers: geo_space + ':bpr_county_layer',
 		styles: 'bpr_layer_fixed_1'
-	}).setZIndex(999).addTo(map);
+	}).setZIndex(11).addTo(map);
 	
 	bpr_county_layer_fixed_0 = L.tileLayer.wms(geo_host + '/geoserver/wms', {
 		format: 'image/png',
 		transparent: true,
 		layers: geo_space + ':bpr_county_layer',
 		styles: 'bpr_layer_fixed_0'
-	}).setZIndex(999).addTo(map);
+	}).setZIndex(12).addTo(map);
 	
 	bpr_county_layer = L.tileLayer.wms(geo_host + '/geoserver/wms', {
 		format: 'image/png',
@@ -63,17 +65,17 @@
 	}).setZIndex(999);
 
 	
-	var bpr_county_layer_urban = L.tileLayer.wms(geo_host + '/geoserver/wms', {
+	bpr_county_layer_urban = L.tileLayer.wms(geo_host + '/geoserver/wms', {
 		format: 'image/png',
 		transparent: true,
 		layers: geo_space + ':bpr_county_layer_urban_only'
-	});
+	}).setZIndex(13);
 	
-	var bpr_tribal = L.tileLayer.wms(geo_host + '/geoserver/wms', {
+	bpr_tribal = L.tileLayer.wms(geo_host + '/geoserver/wms', {
 		format: 'image/png',
 		transparent: true,
 		layers: geo_space + ':bpr_tribal'
-	});
+	}).setZIndex(14);
 	
 	var bpr_block = L.tileLayer.wms(geo_host + '/geoserver/wms', {
 		format: 'image/png',
@@ -86,8 +88,7 @@
          'Satellite': baseSatellite,
          'Terrain': baseTerrain
      }, {
-		'Urban': bpr_county_layer_urban,
-		'Tribal': bpr_tribal
+
      }, {
 		position: 'topleft'
 	 }
@@ -203,7 +204,7 @@ function fetchCounty(lat, lng) {
 						var density = Math.round(density1 * 100) / 100;
 					}
 					
-					var text = "<span class=\"county-name\">" + p.county_name + ", " + p.state_abbr + "</span><p><p><span class=\"county-title\">Demographics:</span><p><p><p>";
+					var text = "<span class=\"county-name\">" + p.county_name + ", " + p.state_abbr + "</span><p><p>";
 					
 					text += "<table width=100% class=\"county-table\">";
 					text += "<tr><td>Total Population:</td><td class=\"td-value\"> " + addComma(p.alltotalpop) + "</td></tr>" +
@@ -507,8 +508,8 @@ function makeBlockText() {
 	if (blockType == 'U') {
 		type = "Urban";
 	}
-	var text = "<span class=\"block-title\"> Block FIPS: </span><span class=\"block-text\">" + clickedBlock_fips + "</span><br><br>";
-	text += "<span class=\"block-title\"> Block Type: </span><span class=\"block-text\">" + type + "</span><p>";
+	var text = "<span class=\"block-title\"> Census Block FIPS Code: </span><span class=\"block-text\">" + clickedBlock_fips + "</span><br>";
+	text += "<span class=\"block-title\"> Census Block Designation: </span><span class=\"block-text\">" + type + "</span><p>";
 	text += "<table class=\"block-table\"><tr><td><span title=\"Provider Name\">Provider</span> <span id=\"span-provider\" class=\"sort-item ui-icon ui-icon-triangle-2-n-s\" style=\"display: inline-block\"></span>  </td>" + 
 		"<td class=\"td-space\"></td><td><span title=\"Technology Type\">Tech</span> <span id=\"span-technology\" class=\"sort-item glyphicon  ui-icon ui-icon-triangle-2-n-s\" style=\"display: inline-block\"></span></td>" + 
 		"<td class=\"td-right\"><span title=\"Download Speed (mbps)\">Down</span> <span id=\"span-download-speed\" class=\"sort-item glyphicon  ui-icon ui-icon-triangle-2-n-s\" style=\"display: inline-block\"></span></td>" + 
@@ -693,43 +694,49 @@ map.fitBounds(clickedCountyLayer.getBounds());
 });
 
 
-$('.checkbox-fixed').on("click", function(e) {
+$('.checkbox-legend').on("click", function(e) {
 var id = e.target.id;
+
 if (id == "checkbox-fixed-1") {
-if($('#' + id).prop('checked')) {
-//remove layer
-if (map.hasLayer(bpr_county_layer_fixed_1)) {
-map.removeLayer(bpr_county_layer_fixed_1);
-}
-//add layer
-bpr_county_layer_fixed_1.addTo(map);
-}
-else {
-//remove layer
-if (map.hasLayer(bpr_county_layer_fixed_1)) {
-map.removeLayer(bpr_county_layer_fixed_1);
-}
-}
+	//remove layer
+	if (map.hasLayer(bpr_county_layer_fixed_1)) {
+	map.removeLayer(bpr_county_layer_fixed_1);
+	}
+	if($('#' + id).prop('checked')) {
+	//add layer
+	bpr_county_layer_fixed_1.addTo(map);
+	}
 }
 else if (id == "checkbox-fixed-0") {
-if($('#' + id).prop('checked')) {
-//remove layer
-if (map.hasLayer(bpr_county_layer_fixed_0)) {
-map.removeLayer(bpr_county_layer_fixed_0);
+	//remove layer
+	if (map.hasLayer(bpr_county_layer_fixed_0)) {
+	map.removeLayer(bpr_county_layer_fixed_0);
+	}
+	if($('#' + id).prop('checked')) {
+	//add layer
+	bpr_county_layer_fixed_0.addTo(map);
+	}
 }
-//add layer
-bpr_county_layer_fixed_0.addTo(map);
+else if (id == "checkbox-tribal") {
+	//remove layer
+	if (map.hasLayer(bpr_tribal)) {
+	map.removeLayer(bpr_tribal);
+	}
+	if($('#' + id).prop('checked')) {
+	//add layer
+	bpr_tribal.addTo(map);
+	}
 }
-else {
-//remove layer
-if (map.hasLayer(bpr_county_layer_fixed_0)) {
-map.removeLayer(bpr_county_layer_fixed_0);
+else if (id == "checkbox-urban") {
+	//remove layer
+	if (map.hasLayer(bpr_county_layer_urban)) {
+	map.removeLayer(bpr_county_layer_urban);
+	}
+	if($('#' + id).prop('checked')) {
+	//add layer
+	bpr_county_layer_urban.addTo(map);
+	}
 }
-}
-
-}
-
-
 
 });
 
@@ -894,4 +901,5 @@ $(document).ready(function() {
 	createMap();
 	setupListener();
 	writeIntro();
+	
 });

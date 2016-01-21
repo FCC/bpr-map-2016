@@ -98,13 +98,17 @@
 									<span class="glyphicon glyphicon-remove"></span> <span class="sr-only">Hide legend</span>
 								</button>
 				</td></tr>
-				<tr><td><input type="checkbox" id="0" class="checkbox-provider" checked>&nbsp;</td><td style="width: 28px; height: 28px;"><div style="width: 20px; height: 20px; background-color: #ffffcc; opacity: 0.75; border: solid 1px #6e016b"></div></td><td> No fixed providers at 25/3</td></tr>
+				<tr><td><input type="checkbox" id="0" class="checkbox-provider" checked>&nbsp;</td><td style="width: 28px; height: 28px;"><div style="width: 20px; height: 20px; background-color: #ffffcc; opacity: 0.75; border: solid 1px #6e016b"></div></td><td> No fixed providers at 25 Mbps/3 Mbps</td></tr>
 				<tr><td><input type="checkbox" id="1" class="checkbox-provider" checked>&nbsp;</td><td style="width: 28px; height: 28px;"><div style="width: 20px; height: 20px; background-color: #6e016b; opacity: 0.75"></div></td><td> FTTP</td></tr>
 				<tr><td><input type="checkbox" id="2" class="checkbox-provider" checked>&nbsp;</td><td style="width: 28px; height: 28px;"><div style="width: 20px; height: 20px; background-color: #6e016b; opacity: 0.75"></div></td><td> Cable modem</td></tr>
 				<tr><td><input type="checkbox" id="3" class="checkbox-provider" checked>&nbsp;</td><td style="width: 28px; height: 28px;"><div style="width: 20px; height: 20px; background-color: #6e016b; opacity: 0.75"></div></td><td> DSL (incl. FTTN), other copper</td></tr>
 				<tr><td><input type="checkbox" id="4" class="checkbox-provider" checked>&nbsp;</td><td style="width: 28px; height: 28px;"><div style="width: 20px; height: 20px; background-color: #6e016b; opacity: 0.75"></div></td><td> Fixed wireless</td></tr>
 				<tr><td><input type="checkbox" id="5" class="checkbox-provider" checked>&nbsp;</td><td style="width: 28px; height: 28px;"><div style="width: 20px; height: 20px; background-color: #6e016b; opacity: 0.75"></div></td><td> Other</td></tr>
-				
+				<tr><td><input type="checkbox" id="5" class="checkbox-provider" checked>&nbsp;</td><td style="width: 28px; height: 28px;"><div style="width: 20px; height: 20px; background-color: #08306b; opacity: 0.75; border: solid 1px #999999"></div></td><td> Residential Broadband of at least 100 Mbps/5 Mbps</td></tr>
+				<tr style="height: 1px; background-color: #cccccc"><td colspan=3></td></tr>
+				<tr><td><input type="checkbox" id="6" class="checkbox-provider">&nbsp;</td><td style="width: 28px; height: 28px;"><div style="width: 20px; height: 20px; background-color: #FFFFFF; background-image: url(img/slash.png); border: solid 1px #cccccc; opacity: 1.0"></div></td><td> Tribal land</td></tr>
+				<tr><td><input type="checkbox" id="7" class="checkbox-provider">&nbsp;</td><td style="width: 28px; height: 28px;"><div style="width: 20px; height: 20px; background-color: #FFFFFF; background-image: url(img/dot.png); border: solid 1px #cccccc; opacity: 1.0"></div></td><td> Urban area</td></tr>
+
 				</table>
 
 			</div>
@@ -142,6 +146,9 @@
 	var layer3;
 	var layer4;
 	var layer5;
+	var bpr_county_layer_urban;
+	var bpr_tribal;
+	
 	var geo_host = "http://ldevtm-geo02:8080";
 	var geo_space = "fcc";
 	
@@ -165,27 +172,27 @@
 	 layer3 = L.mapbox.tileLayer('fcc.d1f028b8').setZIndex(14).addTo(map);
 	 layer4 = L.mapbox.tileLayer('fcc.f79709f8').setZIndex(15).addTo(map);
 	 layer5 = L.mapbox.tileLayer('fcc.0766ddb3').setZIndex(16).addTo(map);
-	 layerList = [layer0, layer1, layer2, layer3, layer4, layer5];
 	 
-	var bpr_county_layer_urban = L.tileLayer.wms(geo_host + '/geoserver/wms', {
+	 bpr_county_layer_urban = L.tileLayer.wms(geo_host + '/geoserver/wms', {
 		format: 'image/png',
 		transparent: true,
 		layers: geo_space + ':bpr_county_layer_urban_only'
-	});
+	}).setZIndex(21);
 	
-	var bpr_tribal = L.tileLayer.wms(geo_host + '/geoserver/wms', {
+	bpr_tribal = L.tileLayer.wms(geo_host + '/geoserver/wms', {
 		format: 'image/png',
 		transparent: true,
 		layers: geo_space + ':bpr_tribal'
-	});
+	}).setZIndex(22);
+	
+	layerList = [layer0, layer1, layer2, layer3, layer4, layer5, bpr_tribal, bpr_county_layer_urban];
 	 
 	layerControl = new L.Control.Layers({
          'Street': baseStreet.addTo(map),
          'Satellite': baseSatellite,
          'Terrain': baseTerrain
      }, {
-		'Urban': bpr_county_layer_urban,
-		'Tribal': bpr_tribal
+
      }, {
 		position: 'topleft'
 	 }
@@ -201,7 +208,12 @@
 	
 	function activateAllLegends() {
 	for (var i = 0; i < 10; i++) {
-	$('#' + i).prop('checked', true)
+	if (i <= 5) {
+		$('#' + i).prop('checked', true);
+	}
+	else {
+		$('#' + i).prop('checked', false);
+	}
 	}
 	}
 	

@@ -176,13 +176,15 @@
 	bpr_county_layer_urban = L.tileLayer.wms(geo_host + '/geoserver/wms', {
 		format: 'image/png',
 		transparent: true,
-		layers: geo_space + ':bpr_county_layer_urban_only'
+		layers: geo_space + ':bpr_county_layer_urban_only',
+		styles: 'bpr_layer_urban'
 	}).setZIndex(21);
 	
 	bpr_tribal = L.tileLayer.wms(geo_host + '/geoserver/wms', {
 		format: 'image/png',
 		transparent: true,
-		layers: geo_space + ':bpr_tribal'
+		layers: geo_space + ':bpr_tribal',
+		styles: 'bpr_tribal'
 	}).setZIndex(22);
 	
 	layerList = [layer0, layer1, layer2, layer3, layer4, layer5, bpr_tribal, bpr_county_layer_urban];

@@ -96,10 +96,10 @@
 									<span class="glyphicon glyphicon-remove"></span> <span class="sr-only">Hide legend</span>
 								</button>
 				</td></tr>
-				<tr><td><input type="checkbox" id="0" class="checkbox-provider" checked>&nbsp;</td><td style="width: 28px; height: 28px;"><div style="width: 20px; height: 20px; background-color: #ffffcc; opacity: 0.75; border: solid 1px #999999"></div></td><td> Zero fixed 25 Mbps/3 Mbps providers</td></tr>
-				<tr><td><input type="checkbox" id="1" class="checkbox-provider" checked>&nbsp;</td><td style="width: 28px; height: 28px;"><div style="width: 20px; height: 20px; background-color: #fdcc8a; opacity: 0.75; border: solid 1px #999999"></div></td><td> One fixed 25 Mbps/3 Mbps provider</td></tr>
-				<tr><td><input type="checkbox" id="2" class="checkbox-provider" checked>&nbsp;</td><td style="width: 28px; height: 28px;"><div style="width: 20px; height: 20px; background-color: #fc8d59; opacity: 0.75; border: solid 1px #999999"></div></td><td> Two fixed 25 Mbps/3 Mbps providers</td></tr>
-				<tr><td><input type="checkbox" id="3" class="checkbox-provider" checked>&nbsp;</td><td style="width: 28px; height: 28px;"><div style="width: 20px; height: 20px; background-color: #d7301f; opacity: 0.75; border: solid 1px #999999"></div></td><td> Three or more fixed 25 Mbps/3 Mbps providers</td></tr>
+				<tr><td><input type="checkbox" id="0" class="checkbox-provider" checked>&nbsp;</td><td style="width: 28px; height: 28px;"><div style="width: 20px; height: 20px; background-color: #ffffcc; opacity: 1.0; border: solid 1px #999999"></div></td><td> Zero fixed 25 Mbps/3 Mbps providers</td></tr>
+				<tr><td><input type="checkbox" id="1" class="checkbox-provider" checked>&nbsp;</td><td style="width: 28px; height: 28px;"><div style="width: 20px; height: 20px; background-color: #fdcc8a; opacity: 1.0; border: solid 1px #999999"></div></td><td> One fixed 25 Mbps/3 Mbps provider</td></tr>
+				<tr><td><input type="checkbox" id="2" class="checkbox-provider" checked>&nbsp;</td><td style="width: 28px; height: 28px;"><div style="width: 20px; height: 20px; background-color: #fc8d59; opacity: 1.0; border: solid 1px #999999"></div></td><td> Two fixed 25 Mbps/3 Mbps providers</td></tr>
+				<tr><td><input type="checkbox" id="3" class="checkbox-provider" checked>&nbsp;</td><td style="width: 28px; height: 28px;"><div style="width: 20px; height: 20px; background-color: #d7301f; opacity: 1.0; border: solid 1px #999999"></div></td><td> Three or more fixed 25 Mbps/3 Mbps providers</td></tr>
 				<tr style="height: 1px; background-color: #cccccc"><td colspan=3></td></tr>
 				<tr><td><input type="checkbox" id="4" class="checkbox-provider">&nbsp;</td><td style="width: 28px; height: 28px;"><div style="width: 20px; height: 20px; background-color: #FFFFFF; background-image: url(img/slash.png); border: solid 1px #cccccc; opacity: 1.0"></div></td><td> Tribal land</td></tr>
 				<tr><td><input type="checkbox" id="5" class="checkbox-provider">&nbsp;</td><td style="width: 28px; height: 28px;"><div style="width: 20px; height: 20px; background-color: #FFFFFF; background-image: url(img/dot.png); border: solid 1px #cccccc; opacity: 1.0"></div></td><td> Urban area</td></tr>
@@ -142,7 +142,8 @@
 	var bpr_county_layer_urban;
 	var bpr_tribal;
 	
-	var geo_host = "http://ldevtm-geo02:8080";
+	//var geo_host = "http://ldevtm-geo02:8080";
+	var geo_host = "http://www.broadbandmap.gov";
 	var geo_space = "fcc";
 
 	

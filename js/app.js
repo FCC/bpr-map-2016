@@ -1,7 +1,10 @@
 
-	var geo_host = "http://ldevtm-geo02:8080";
-	var geo_space = "fcc";
+	//var geo_host = "http://ldevtm-geo02:8080";
+	//var geo_space = "fcc";
 
+	var geo_host = "http://www.broadbandmap.gov";
+	var geo_space = "fcc";
+	
 	var map;
 	var clickedCountyLayer;
 	var clickedBlockLayer;
@@ -168,6 +171,9 @@ function addComma(a) {
 function fetchCounty(lat, lng) {
 
 	var url = geo_host + "/geoserver/" + geo_space + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + geo_space + ":bpr_county&maxFeatures=1&outputFormat=text/javascript&cql_filter=contains(geom,%20POINT(" + lng + " " + lat + "))";
+var url = geo_host + "/geoserver/" + geo_space + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + geo_space + ":bpr_county&maxFeatures=1&outputFormat=json&cql_filter=contains(geom,%20POINT(" + lng + " " + lat + "))" + "&format_options=callback:parseResponse";
+
+console.log(url)
 
 	$.ajax({
 		type: "GET",
@@ -249,6 +255,8 @@ function fetchCounty(lat, lng) {
 function fetchBlock(lat, lng) {
 
 	var url = geo_host + "/geoserver/" + geo_space + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + geo_space + ":bpr_block_layer&maxFeatures=1&outputFormat=text/javascript&cql_filter=contains(geom,%20POINT(" + lng + " " + lat + "))";
+	var url = geo_host + "/geoserver/" + geo_space + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + geo_space + ":bpr_block_layer&maxFeatures=1&outputFormat=json&cql_filter=contains(geom,%20POINT(" + lng + " " + lat + "))"  + "&format_options=callback:parseResponse";
+;
 
 	console.log(url)
 	
@@ -271,6 +279,8 @@ function fetchBlock(lat, lng) {
 			clickedBlock_fips = block_fips;
 			
 			var url = geo_host + "/geoserver/" + geo_space + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + geo_space + ":bpr_block_info&maxFeatures=100&outputFormat=text/javascript&cql_filter=block_fips='" + block_fips + "'";
+			var url = geo_host + "/geoserver/" + geo_space + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + geo_space + ":bpr_block_info&maxFeatures=100&outputFormat=json&cql_filter=block_fips='" + block_fips + "'" + "&format_options=callback:parseResponse";
+;;
 
 			console.log(url)
 		

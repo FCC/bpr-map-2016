@@ -2,7 +2,7 @@
 	//var geo_host = "http://ldevtm-geo02:8080";
 	//var geo_space = "fcc";
 
-	var geo_host = "http://www.broadbandmap.gov";
+	var geo_host = "//www.broadbandmap.gov";
 	var geo_space = "fcc";
 	
 	var map;
@@ -47,27 +47,22 @@
 		layers: geo_space + ':bpr_state_layer'
 	});
 	 
-	bpr_county_layer_fixed_1 = L.tileLayer.wms(geo_host + '/geoserver/wms', {
+
+	bpr_county_layer_fixed_1 = L.tileLayer.wms(geo_host + '/geoserver/gwc/service/wms?tiled=true', {
 		format: 'image/png',
 		transparent: true,
-		layers: geo_space + ':bpr_county_layer',
-		styles: 'bpr_layer_fixed_1'
+		layers: geo_space + ':bpr_county_layer_1'
 	}).setZIndex(11).addTo(map);
 	
-	bpr_county_layer_fixed_0 = L.tileLayer.wms(geo_host + '/geoserver/wms', {
+	
+	
+	bpr_county_layer_fixed_0 = L.tileLayer.wms(geo_host + '/geoserver/gwc/service/wms?tiled=true', {
 		format: 'image/png',
 		transparent: true,
-		layers: geo_space + ':bpr_county_layer',
-		styles: 'bpr_layer_fixed_0'
+		layers: geo_space + ':bpr_county_layer_0'
 	}).setZIndex(12).addTo(map);
-	
-	bpr_county_layer = L.tileLayer.wms(geo_host + '/geoserver/wms', {
-		format: 'image/png',
-		transparent: true,
-		layers: geo_space + ':bpr_county_layer'
-	}).setZIndex(999);
 
-	
+
 	bpr_county_layer_urban = L.tileLayer.wms(geo_host + '/geoserver/wms', {
 		format: 'image/png',
 		transparent: true,
@@ -82,11 +77,7 @@
 		styles: 'bpr_tribal'
 	}).setZIndex(14);
 	
-	var bpr_block = L.tileLayer.wms(geo_host + '/geoserver/wms', {
-		format: 'image/png',
-		transparent: true,
-		layers: geo_space + ':bpr_block_layer'
-	});
+	
 	
 	layerControl = new L.Control.Layers({
          'Street': baseStreet.addTo(map),

@@ -161,8 +161,8 @@ function addComma(a) {
 	
 function fetchCounty(lat, lng) {
 
-	var url = geo_host + "/geoserver/" + geo_space + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + geo_space + ":bpr_county&maxFeatures=1&outputFormat=text/javascript&cql_filter=contains(geom,%20POINT(" + lng + " " + lat + "))";
-var url = geo_host + "/geoserver/" + geo_space + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + geo_space + ":bpr_county&maxFeatures=1&outputFormat=json&cql_filter=contains(geom,%20POINT(" + lng + " " + lat + "))" + "&format_options=callback:parseResponse";
+	//var url = geo_host + "/geoserver/" + geo_space + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + geo_space + ":bpr_county&maxFeatures=1&outputFormat=text/javascript&cql_filter=contains(geom,%20POINT(" + lng + " " + lat + "))";
+	var url = geo_host + "/geoserver/" + geo_space + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + geo_space + ":bpr_county&maxFeatures=1&outputFormat=json&cql_filter=contains(geom,%20POINT(" + lng + " " + lat + "))" + "&format_options=callback:parseResponse";
 
 console.log(url)
 
@@ -174,7 +174,8 @@ console.log(url)
 		success: function(data) {
 		
 			console.log('county suc');
-			
+			console.log(data);
+						
 			if (data.features.length > 0) {
 
 				if (countyLayerData.features.length == 0 || countyLayerData.features[0].properties.county_fips != data.features[0].properties.county_fips) {
@@ -234,6 +235,15 @@ console.log(url)
 				}
 			
 			}
+			else {
+				var county_text = "No county data found at your searched/clicked location.";
+				$('#display-county').html(county_text);
+			//remove county boundary
+			if (map.hasLayer(clickedCountyLayer)) {
+				map.removeLayer(clickedCountyLayer);
+			}
+			
+			}
 		
 		}
 
@@ -258,20 +268,39 @@ function fetchBlock(lat, lng) {
 		jsonpCallback: "parseResponse",
 		success: function(data) {
 		
+		console.log('block suc');
+		console.log(data);
 		clickedBlockLayerData = data;
+		
+		//remove location marker
+		if (map.hasLayer(locationMarker)) {
+			map.removeLayer(locationMarker);
+		}
+		//remove block boundary
+		if (map.hasLayer(clickedBlockLayer)) {
+			map.removeLayer(clickedBlockLayer);
+		}
 		
 		if (data.features.length > 0) {
 		
 			console.log('block suc');
 			console.log(data)
 			
-			
 			var block_fips = data.features[0].properties.block_fips;
 			clickedBlock_fips = block_fips;
 			
+			if (map.hasLayer(clickedBlockLayer)) {
+				map.removeLayer(clickedBlockLayer);
+			}
+			clickedBlockLayer = L.mapbox.featureLayer(clickedBlockLayerData).setStyle(clickedBlockStyle).addTo(map);
+			//map.fitBounds(clickedBlockLayer.getBounds());
+			clickedBlockLayer.on("click", function(e) {
+			clickedMap(e);
+			});
+			setLocationMarker(lat, lng);
+			
 			var url = geo_host + "/geoserver/" + geo_space + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + geo_space + ":bpr_block_info&maxFeatures=100&outputFormat=text/javascript&cql_filter=block_fips='" + block_fips + "'";
 			var url = geo_host + "/geoserver/" + geo_space + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + geo_space + ":bpr_block_info&maxFeatures=100&outputFormat=json&cql_filter=block_fips='" + block_fips + "'" + "&format_options=callback:parseResponse";
-;;
 
 			console.log(url)
 		
@@ -296,16 +325,6 @@ function fetchBlock(lat, lng) {
 						blockInfoData.sort(sort_dbaname_0);
 						console.log(blockInfoData)
 						block_text = makeBlockText();
-						if (map.hasLayer(clickedBlockLayer)) {
-							map.removeLayer(clickedBlockLayer);
-						}
-						clickedBlockLayer = L.mapbox.featureLayer(clickedBlockLayerData).setStyle(clickedBlockStyle).addTo(map);
-						//map.fitBounds(clickedBlockLayer.getBounds());
-						clickedBlockLayer.on("click", function(e) {
-						clickedMap(e);
-						});
-						setLocationMarker(lat, lng);
-				
 					}
 					else {
 						block_text = "No data for clicked block.";
@@ -321,6 +340,11 @@ function fetchBlock(lat, lng) {
 				}
 			});
 		}
+		else {
+			var block_text = "No block data found at your searched/clicked location.";
+			$('#display-block').html(block_text);
+		}
+		
 		}
 	});
 	

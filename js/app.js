@@ -21,6 +21,9 @@
 	var cursorY;
 	var clickX = 0;
 	var clickY = 0;
+	var locationLat;
+	var location_lon;
+	var lastTimestamp = 0;
 	
 	var clickedCountyStyle = {color: "#00f", opacity: 0.5,  fillOpacity: 0.1, fillColor: "#fff", weight: 3};
 	var clickedBlockStyle = {color: "#000", opacity: 0.5,  fillOpacity: 0.1, fillColor: "#fff", weight: 3};
@@ -103,15 +106,39 @@
 	}
 	
 function clickedMap(e) {
+
+	timestamp = Date.now();
+	console.log(timestamp);
+	if (lastTimestamp > 0 && timestamp-lastTimestamp < 1000) {
+		lastTimestamp = timestamp;
+		return;
+	}
+	lastTimestamp = timestamp;
 	clickX = cursorX;
 	clickY = cursorY;
 	var lat = Math.round(1000000*e.latlng.lat)/1000000.0;
 	var lng = Math.round(1000000*e.latlng.lng)/1000000.0;
+	locationLat = lat;
+	locationLon = lng;
+	
+	removeBlockCountyLayers();
 
 	fetchCounty(lat, lng);
 	setTimeout(function () {fetchBlock(lat, lng)}, 200);
 }
 
+
+function removeBlockCountyLayers() {
+	if (map.hasLayer(clickedCountyLayer)) {
+		map.removeLayer(clickedCountyLayer);
+	}
+	if (map.hasLayer(clickedBlockLayer)) {
+		map.removeLayer(clickedBlockLayer);
+	}
+	if (map.hasLayer(locationMarker)) {
+		map.removeLayer(locationMarker);
+	}
+}
 
 function writeIntro() {
 
@@ -158,13 +185,21 @@ function addComma(a) {
 
 	return ret;
 }
-	
+
+
+
+
+
 function fetchCounty(lat, lng) {
 
 	//var url = geo_host + "/geoserver/" + geo_space + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + geo_space + ":bpr_county&maxFeatures=1&outputFormat=text/javascript&cql_filter=contains(geom,%20POINT(" + lng + " " + lat + "))";
 	var url = geo_host + "/geoserver/" + geo_space + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + geo_space + ":bpr_county&maxFeatures=1&outputFormat=json&cql_filter=contains(geom,%20POINT(" + lng + " " + lat + "))" + "&format_options=callback:parseResponse";
 
-console.log(url)
+	console.log(url)
+	//remove county layer
+	if (map.hasLayer(clickedCountyLayer)) {
+		map.removeLayer(clickedCountyLayer);
+	}
 
 	$.ajax({
 		type: "GET",
@@ -173,89 +208,69 @@ console.log(url)
 		jsonpCallback: "parseResponse",
 		success: function(data) {
 		
-			console.log('county suc');
-			console.log(data);
-						
-			if (data.features.length > 0) {
-
-				if (countyLayerData.features.length == 0 || countyLayerData.features[0].properties.county_fips != data.features[0].properties.county_fips) {
-			
-					if (map.hasLayer(clickedCountyLayer)) {
-						map.removeLayer(clickedCountyLayer);
-					}
-					clickedCountyLayer = L.mapbox.featureLayer(data).setStyle(clickedCountyStyle).addTo(map);
-					map.fitBounds(clickedCountyLayer.getBounds());
-					clickedCountyLayer.on("click", function(e) {
-						clickedMap(e);
-					});
-					
-					//get county info
-					
-					var a = addComma(12345678.998);
-					
-					var p = data.features[0].properties;
-					var urbanunscent = Math.round(p.urbanunscent*100*10) / 10;
-					var ruralunscent = Math.round(p.ruralunscent*100*10) / 10;
-					var density1 = parseFloat(p.allden);
-					if (density1 > 10) {
-						var density = Math.round(density1);
-					}
-					else {
-						var density = Math.round(density1 * 100) / 100;
-					}
-					
-					var text = "<span class=\"county-name\">" + p.county_name + ", " + p.state_abbr + "</span><p><p>";
-					
-					text += "<table width=100% class=\"county-table\">";
-					text += "<tr><td>Total Population:</td><td class=\"td-value\"> " + addComma(p.alltotalpop) + "</td></tr>" +
-							"<tr><td>Pop Density (pop/mi<sup>2</sup>):</td><td class=\"td-value\"> " + addComma(density)  + "</td></tr>" +
-							"<tr><td>Per Capita Income: </td><td class=\"td-value\">" + "$" + addComma(p.percapinc) + "</td></tr>" +
-							"<tr><td>Total Pop w/o Access: </td><td class=\"td-value\">" + addComma(p.allunspop) + "</td></tr>" +
-							"<tr><td>Percent Urban Pop w/o Access: </td><td class=\"td-value\">" + urbanunscent + "%</td></tr>" + 
-							"<tr><td>Percent Rural Pop w/o Access: </td><td class=\"td-value\">" + ruralunscent + "%</td></tr>";
-
-							
-					text += "</table>";
-					
-					$('#display-county').html(text);
-					//switchTab("county");
-					
-					//clear block data and layer
-					//if (map.hasLayer(clickedBlockLayer)) {
-					//	map.removeLayer(clickedBlockLayer);
-					//}
-					//$('#display-block').html("Click on map or enter an address to show block info.");
-					
-					
-					countyLayerData = data;
-				
-				}
-				else {
-					//switchTab("block");
-				}
-			
-			}
-			else {
+			if (data.features.length == 0) {
 				var county_text = "No county data found at your searched/clicked location.";
 				$('#display-county').html(county_text);
-			//remove county boundary
+				return;
+			}
+		
+			var id = data.features[0].id.replace(/\..*$/, "");
+			console.log('county: ' + id); 
+			
+			if (id != "bpr_county") {
+				return;
+			}
+
 			if (map.hasLayer(clickedCountyLayer)) {
 				map.removeLayer(clickedCountyLayer);
 			}
-			
+			clickedCountyLayer = L.mapbox.featureLayer(data).setStyle(clickedCountyStyle).addTo(map);
+			if (countyLayerData.features.length == 0 || countyLayerData.features[0].properties.county_fips != data.features[0].properties.county_fips) {
+				map.fitBounds(clickedCountyLayer.getBounds());
 			}
+			clickedCountyLayer.on("click", function(e) {
+				clickedMap(e);
+			});
+			
+			//get county info
+			
+			var a = addComma(12345678.998);
+			
+			var p = data.features[0].properties;
+			var urbanunscent = Math.round(p.urbanunscent*100*10) / 10;
+			var ruralunscent = Math.round(p.ruralunscent*100*10) / 10;
+			var density1 = parseFloat(p.allden);
+			if (density1 > 10) {
+				var density = Math.round(density1);
+			}
+			else {
+				var density = Math.round(density1 * 100) / 100;
+			}
+			
+			var text = "<span class=\"county-name\">" + p.county_name + ", " + p.state_abbr + "</span><p><p>";
+			
+			text += "<table width=100% class=\"county-table\">";
+			text += "<tr><td>Total Population:</td><td class=\"td-value\"> " + addComma(p.alltotalpop) + "</td></tr>" +
+					"<tr><td>Pop Density (pop/mi<sup>2</sup>):</td><td class=\"td-value\"> " + addComma(density)  + "</td></tr>" +
+					"<tr><td>Per Capita Income: </td><td class=\"td-value\">" + "$" + addComma(p.percapinc) + "</td></tr>" +
+					"<tr><td>Total Pop w/o Access: </td><td class=\"td-value\">" + addComma(p.allunspop) + "</td></tr>" +
+					"<tr><td>Percent Urban Pop w/o Access: </td><td class=\"td-value\">" + urbanunscent + "%</td></tr>" + 
+					"<tr><td>Percent Rural Pop w/o Access: </td><td class=\"td-value\">" + ruralunscent + "%</td></tr>";
+
+					
+			text += "</table>";
+			
+			$('#display-county').html(text);
+			countyLayerData = data;
 		
 		}
-
-
 	});
-
 
 }
 	
 function fetchBlock(lat, lng) {
 
-	var url = geo_host + "/geoserver/" + geo_space + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + geo_space + ":bpr_block_layer&maxFeatures=1&outputFormat=text/javascript&cql_filter=contains(geom,%20POINT(" + lng + " " + lat + "))";
+	//var url = geo_host + "/geoserver/" + geo_space + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + geo_space + ":bpr_block_layer&maxFeatures=1&outputFormat=text/javascript&cql_filter=contains(geom,%20POINT(" + lng + " " + lat + "))";
 	var url = geo_host + "/geoserver/" + geo_space + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + geo_space + ":bpr_block_layer&maxFeatures=1&outputFormat=json&cql_filter=contains(geom,%20POINT(" + lng + " " + lat + "))"  + "&format_options=callback:parseResponse";
 ;
 
@@ -268,23 +283,18 @@ function fetchBlock(lat, lng) {
 		jsonpCallback: "parseResponse",
 		success: function(data) {
 		
-		console.log('block suc');
-		console.log(data);
-		clickedBlockLayerData = data;
-		
-		//remove location marker
-		if (map.hasLayer(locationMarker)) {
-			map.removeLayer(locationMarker);
-		}
-		//remove block boundary
-		if (map.hasLayer(clickedBlockLayer)) {
-			map.removeLayer(clickedBlockLayer);
-		}
-		
-		if (data.features.length > 0) {
-		
-			console.log('block suc');
-			console.log(data)
+			if (data.features.length == 0) {
+				var block_text = "No block data found at your searched/clicked location.";
+				$('#display-block').html(block_text);
+				return;
+			}
+				
+			var id = data.features[0].id.replace(/\..*$/, "");
+			if (id != "bpr_block_layer") {
+				return;
+			}
+	
+			clickedBlockLayerData = data;
 			
 			var block_fips = data.features[0].properties.block_fips;
 			clickedBlock_fips = block_fips;
@@ -293,11 +303,12 @@ function fetchBlock(lat, lng) {
 				map.removeLayer(clickedBlockLayer);
 			}
 			clickedBlockLayer = L.mapbox.featureLayer(clickedBlockLayerData).setStyle(clickedBlockStyle).addTo(map);
+
 			//map.fitBounds(clickedBlockLayer.getBounds());
 			clickedBlockLayer.on("click", function(e) {
 			clickedMap(e);
 			});
-			setLocationMarker(lat, lng);
+			setLocationMarker(locationLat, locationLon);
 			
 			var url = geo_host + "/geoserver/" + geo_space + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + geo_space + ":bpr_block_info&maxFeatures=100&outputFormat=text/javascript&cql_filter=block_fips='" + block_fips + "'";
 			var url = geo_host + "/geoserver/" + geo_space + "/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=" + geo_space + ":bpr_block_info&maxFeatures=100&outputFormat=json&cql_filter=block_fips='" + block_fips + "'" + "&format_options=callback:parseResponse";
@@ -311,8 +322,24 @@ function fetchBlock(lat, lng) {
 				jsonpCallback: "parseResponse",
 				success: function(data) {
 				
-					console.log('block geom');
-					console.log(data)
+					if (data.features.length == 0) {
+						var blockType = clickedBlockLayerData.features[0].properties.urban_rural_ind;
+						var type = "Rural";
+						if (blockType == 'U') {
+							type = "Urban";
+						}
+						var block_text = "<span class=\"block-title\"> Census Block FIPS Code: </span><span class=\"block-text\">" + clickedBlock_fips + "</span><br>";
+						block_text += "<span class=\"block-title\"> Census Block Designation: </span><span class=\"block-text\">" + type + "</span><p>";
+						block_text += "<br>No data for the clicked block.";
+						$('#display-block').html(block_text);
+						return;
+					}
+				
+					var id = data.features[0].id.replace(/\..*$/, "");
+					if (id != "bpr_block_info") {
+						return;
+					}
+
 					var block_text = "";
 					blockInfoData = [];
 					
@@ -323,7 +350,6 @@ function fetchBlock(lat, lng) {
 						}
 						
 						blockInfoData.sort(sort_dbaname_0);
-						console.log(blockInfoData)
 						block_text = makeBlockText();
 					}
 					else {
@@ -339,16 +365,17 @@ function fetchBlock(lat, lng) {
 
 				}
 			});
-		}
-		else {
-			var block_text = "No block data found at your searched/clicked location.";
-			$('#display-block').html(block_text);
-		}
-		
-		}
+			
+			}
 	});
 	
 }
+
+
+function parseResponse(data) {
+
+}
+
 
 function setLocationMarker(lat, lon) {
 	if (map.hasLayer(locationMarker)) {
@@ -427,10 +454,7 @@ function sortItems(e) {
 
 
 }
-
-function parseResponse(data) {
-
-}	
+	
 
 function sort_dbaname_0(a,b) {
 	if (a.dbaname == b.dbaname) {
@@ -617,6 +641,8 @@ if (Math.abs(lat) > 90 || Math.abs(lon) > 180) {
 	return;
 }
 
+	locationLat = lat;
+	locationLon = lon;
 	fetchCounty(lat, lon);
 	setTimeout(function () {fetchBlock(lat, lon)}, 200);
 }
@@ -637,12 +663,20 @@ if (Math.abs(lat) > 90 || Math.abs(lon) > 180) {
 	return;
 }
 
+
+	removeBlockCountyLayers();
+
+	locationLat = lat;
+	locationLon = lon;
 	fetchCounty(lat, lon);
 	setTimeout(function () {fetchBlock(lat, lon)}, 200);
 
 } 
 	
 function locChange() {
+
+	removeBlockCountyLayers();
+	
 	var loc = $("#input-location").val();
 	geocoder.query(loc, codeMap);
 	
@@ -654,6 +688,8 @@ function locChange() {
 	}
 	var lat = data.latlng[0];
 	var lon = data.latlng[1];
+	locationLat = lat;
+	locationLon = lon;
 	
 	fetchCounty(lat, lon);
 	setTimeout(function () {fetchBlock(lat, lon)}, 200);
@@ -869,6 +905,8 @@ cursorY = e.pageY;
 				 
 				 geo_lat = Math.round(geo_lat * 1000000) / 1000000.0;
 				 geo_lon = Math.round(geo_lon * 1000000) / 1000000.0;
+				 locationLat = geo_lat;
+				locationLon = geo_lon;
 
                 fetchCounty(geo_lat, geo_lon);
 				setTimeout(function () {fetchBlock(geo_lat, geo_lon)}, 200);

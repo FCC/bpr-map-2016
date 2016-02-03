@@ -40,6 +40,10 @@
          })
          .setView([50, -115], 3);
 		 
+	map.on("dblclick", function(e){ 
+		e.preventDefault();
+	});
+		 
 	 baseStreet = L.mapbox.tileLayer('fcc.k74ed5ge').addTo(map);
      baseSatellite = L.mapbox.tileLayer('fcc.k74d7n0g');
      baseTerrain = L.mapbox.tileLayer('fcc.k74cm3ol');

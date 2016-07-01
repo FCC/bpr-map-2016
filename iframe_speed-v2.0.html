@@ -148,8 +148,7 @@
 	var bpr_tribal;
 
 	
-	var geo_host = "http://ldevtm-geo02:8080";
-	var geo_host = "http://www.broadbandmap.gov";
+	var geo_host = "https://geo.fcc.gov";
 	var geo_space = "fcc";
 	
 	
@@ -174,14 +173,14 @@
 	 layer4 = L.mapbox.tileLayer('fcc.fffd995f').setZIndex(15).addTo(map);
 	 layer5 = L.mapbox.tileLayer('fcc.91a6e516').setZIndex(16).addTo(map);
 	 
-	bpr_county_layer_urban = L.tileLayer.wms(geo_host + '/geoserver/wms', {
+	bpr_county_layer_urban = L.tileLayer.wms(geo_host + '/wms', {
 		format: 'image/png',
 		transparent: true,
 		layers: geo_space + ':bpr_county_layer_urban_only',
 		styles: 'bpr_layer_urban'
 	}).setZIndex(21);
 	
-	bpr_tribal = L.tileLayer.wms(geo_host + '/geoserver/wms', {
+	bpr_tribal = L.tileLayer.wms(geo_host + '/wms', {
 		format: 'image/png',
 		transparent: true,
 		layers: geo_space + ':bpr_tribal',

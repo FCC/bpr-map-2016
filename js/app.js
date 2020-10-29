@@ -40,9 +40,9 @@ function createMap() {
         e.preventDefault();
     });
 
-    baseStreet = L.mapbox.tileLayer('fcc.k74ed5ge').addTo(map);
-    baseSatellite = L.mapbox.tileLayer('fcc.k74d7n0g');
-    baseTerrain = L.mapbox.tileLayer('fcc.k74cm3ol');
+    baseStreet = L.mapbox.styleLayer('mapbox://styles/mapbox/light-v10').addTo(map);
+    baseSatellite = L.mapbox.styleLayer('mapbox://styles/mapbox/satellite-streets-v11');
+    baseTerrain = L.mapbox.styleLayer('mapbox://styles/mapbox/satellite-v9');
 
     var bpr_state = L.tileLayer.wms(geo_host + '/wms', {
         format: 'image/png',
